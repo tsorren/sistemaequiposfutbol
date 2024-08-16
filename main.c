@@ -24,6 +24,15 @@ struct un_jugador
     float puntaje_general;
 };
 
+struct un_equipo
+{
+    int num;
+    struct un_jugador **jugadores;
+    float promedio;
+    float varianza;
+    float probabilidadGanar;
+};
+
 float calcularPuntaje(struct un_jugador*);
 void moverPunteroADatos(FILE*);
 int calcularCantidadDeJugadores(FILE*);
@@ -35,13 +44,13 @@ void jugadorFueElegido(int);
 void elegirJugadores(struct un_jugador***, struct un_jugador*, const int);
 void ordenarListaDeJugadores(struct un_jugador**, const int);
 void mostrarListadoJugadores(struct un_jugador*, const int, const int);
-void ordenarEquipo(struct un_jugador***, const int);
+void ordenarEquipo(struct un_equipo*, const int);
 float calcularPromedio(struct un_jugador**, int);
 float calcularVarianza(struct un_jugador **, int, int);
 float calcularDispersion(struct un_jugador**, int);
-float calcularProbabilidadDeGanar(struct un_jugador **, struct un_jugador **, int);
-void generarEquiposBalanceadamente(struct un_jugador**, struct un_jugador***, struct un_jugador ***, int);
-void mostrarEquipo(struct un_jugador**, int, float, int);
+void calcularProbabilidadDeGanar(struct un_equipo*, struct un_equipo*, int);
+void generarEquiposBalanceadamente(struct un_jugador**, struct un_equipo*, struct un_equipo*, int);
+void mostrarEquipos(struct un_equipo*, int);
 
 int main(void)
 {
@@ -82,8 +91,12 @@ int main(void)
 
     elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2);
 
-    struct un_jugador **equipo1 = malloc(tam_equipo * sizeof(struct un_jugador *));
-    struct un_jugador **equipo2 = malloc(tam_equipo * sizeof(struct un_jugador *));
+    struct un_equipo equipo1;
+    equipo1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
+
+    struct un_equipo equipo2;
+    equipo2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
+
 
     if (input == 1)
     {
@@ -93,22 +106,24 @@ int main(void)
     {
         for (int i = 0; i < tam_equipo; i++)
         {
-            equipo1[i] = jugadores_disponibles[i];
-            equipo2[i] = jugadores_disponibles[i + tam_equipo];
+            equipo1.jugadores[i] = jugadores_disponibles[i];
+            equipo2.jugadores[i] = jugadores_disponibles[i + tam_equipo];
+            
+            equipo1.num = 0;
+            equipo2.num = 1;
         }
+        calcularProbabilidadDeGanar(&equipo1, &equipo2, tam_equipo);
     }
+    struct un_equipo equipos[2] = {equipo1, equipo2};
 
-    
-    
-    float probabilidadDeGanar = calcularProbabilidadDeGanar(equipo1, equipo2, tam_equipo);
-    mostrarEquipo(equipo1, tam_equipo, probabilidadDeGanar, 0);
-    mostrarEquipo(equipo2, tam_equipo, probabilidadDeGanar, 1);
+    //float probabilidadDeGanar = 
+    mostrarEquipos(equipos, tam_equipo);
 
-    printf("\n\n");
+    moveTo(2, 42);
 
     free(jugadores);
-    free(equipo1);
-    free(equipo2);
+    free(equipo1.jugadores);
+    free(equipo2.jugadores);
 
     return 0;
 }
@@ -381,7 +396,7 @@ void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_ju
     }
 }
 
-void ordenarEquipo(struct un_jugador ***jugadores, const int tam)
+void ordenarEquipo(struct un_equipo *equipo, const int tam)
 {
     int i, j;
     struct un_jugador *aux;
@@ -389,11 +404,11 @@ void ordenarEquipo(struct un_jugador ***jugadores, const int tam)
     {
         for (j = 1; j <= tam - i; j++)
         {
-            if ((*jugadores)[j - 1]->puntaje_general > (*jugadores)[j]->puntaje_general)
+            if (equipo->jugadores[j - 1]->puntaje_general > equipo->jugadores[j]->puntaje_general)
             {
-                aux = (*jugadores)[j - 1];
-                (*jugadores)[j - 1] = (*jugadores)[j];
-                (*jugadores)[j] = aux;
+                aux = equipo->jugadores[j - 1];
+                equipo->jugadores[j - 1] = equipo->jugadores[j];
+                equipo->jugadores[j] = aux;
             }
         }
     }
@@ -431,24 +446,24 @@ float phi(float x)
     return proba;
 }
 
-float calcularProbabilidadDeGanar(struct un_jugador **eq1, struct un_jugador **eq2, int tam_equipo)
+void calcularProbabilidadDeGanar(struct un_equipo *eq1, struct un_equipo *eq2, int tam_equipo)
 {
 
-    float promedio_eq1 = calcularPromedio(eq1, tam_equipo);
-    float promedio_eq2 = calcularPromedio(eq2, tam_equipo);
+    eq1->promedio = calcularPromedio(eq1->jugadores, tam_equipo);
+    eq2->promedio = calcularPromedio(eq2->jugadores, tam_equipo);
 
-    const float modificador = 1;
-    float esperanza = (promedio_eq1 - promedio_eq2) * modificador;
+    const float modificador = 0.5;
+    float esperanza = (eq1->promedio - eq2->promedio) * modificador;
 
-    float varianza_eq1 = calcularVarianza(eq1, tam_equipo, promedio_eq1);
-    float varianza_eq2 = calcularVarianza(eq2, tam_equipo, promedio_eq2);
-    float varianza = varianza_eq1 + varianza_eq2;
+    eq1->varianza = calcularVarianza(eq1->jugadores, tam_equipo, eq1->promedio);
+    eq2->varianza  = calcularVarianza(eq2->jugadores, tam_equipo, eq2->promedio);
+    float varianza = eq1->varianza + eq2->varianza;
 
-    float probabilidad = 1 - phi(0 - esperanza / sqrt(varianza));
-    return probabilidad;
+    eq1->probabilidadGanar = 1 - phi(0 - esperanza / sqrt(varianza));
+    eq2->probabilidadGanar = 1 - eq1->probabilidadGanar;
 }
 
-void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_jugador ***eq1, struct un_jugador ***eq2, int tam)
+void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_equipo *eq1, struct un_equipo *eq2, int tam)
 {
     int tam_equipo = tam / 2;
     int total_combinaciones = 1 << tam; // 2^tam combinaciones posibles
@@ -459,8 +474,15 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_jugador
     float mejor_balance = 99999999;
     float balance;
 
-    struct un_jugador **temp_eq1 = malloc(tam_equipo * sizeof(struct un_jugador));
-    struct un_jugador **temp_eq2 = malloc(tam_equipo * sizeof(struct un_jugador));
+    struct un_equipo temp_eq1;
+    temp_eq1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
+
+    struct un_equipo temp_eq2;
+    temp_eq2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
+
+    temp_eq1.num = 0;
+    temp_eq2.num = 1;
+
     for (int mask = 0; mask < total_combinaciones; mask++)
     {
         count = 0;
@@ -482,11 +504,11 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_jugador
         {
             if (mask & (1 << i))
             {
-                temp_eq1[idx1++] = j_disp[i];
+                temp_eq1.jugadores[idx1++] = j_disp[i];
             }
             else
             {
-                temp_eq2[idx2++] = j_disp[i];
+                temp_eq2.jugadores[idx2++] = j_disp[i];
             }
         }
 
@@ -494,20 +516,11 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_jugador
         ordenarEquipo(&temp_eq2, tam_equipo);
 
         // Calcular la diferencia de promedios
-        /*
 
-        dispersion_eq1 = calcularDispersion(temp_eq1, tam_equipo);
-        dispersion_eq2 = calcularDispersion(temp_eq2, tam_equipo);
-        diferenciaR = fabs(dispersion_eq1 - dispersion_eq2);
+        calcularProbabilidadDeGanar(&temp_eq1, &temp_eq2, tam_equipo);
 
-        peso_promedio = 1.5;
-        peso_varianza = 0.33;
-        peso_dispersion = 0.15;
-        peso_probabilidad = 1.0;
-        */
-        // float balance = peso_promedio * diferenciaP + peso_varianza * diferenciaV + peso_dispersion * diferenciaR;
-        probabilidadDeGanar = calcularProbabilidadDeGanar(temp_eq1, temp_eq2, tam_equipo);
-        balance = fabs(0.5 - probabilidadDeGanar);
+
+        balance = fabs(0.5 - temp_eq1.probabilidadGanar);
 
         // Si la diferencia es menor, actualizamos los equipos
         if (balance < mejor_balance)
@@ -515,47 +528,55 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_jugador
             mejor_balance = balance;
             for (int i = 0; i < tam_equipo; i++)
             {
-                (*eq1)[i] = temp_eq1[i];
-                (*eq2)[i] = temp_eq2[i];
+                eq1->jugadores[i] = temp_eq1.jugadores[i];
+                eq2->jugadores[i] = temp_eq2.jugadores[i];
             }
+            eq1->num = 0;
+            eq2->num = 1;
+            calcularProbabilidadDeGanar(eq1, eq2, tam_equipo);
         }
     }
-    free(temp_eq1);
-    free(temp_eq2);
+    free(temp_eq1.jugadores);
+    free(temp_eq2.jugadores);
     return;
 }
 
-void mostrarEquipo(struct un_jugador **equipo, int tam, float proba, int num)
+void mostrarEquipos(struct un_equipo *equipos, int tam)
 {
-    if (num == 1)
-        setColor(FCYA, BBLK);
-    else
-        setColor(FYEL, BBLK);
-    int x = 4;
-    int y = 37 + num * 6;
-    moveTo(x, y);
-    printf("EQUIPO %d: ", num + 1);
-
-    moveTo(x + 4, ++y);
-    printf("Jugadores:       ", num + 1);
-    for (int i = 0; i < tam - 1; i++)
+    int x = 125;
+    int y = 3;
+    for (int num = 0; num < 2; num++)
     {
-        printf("%s, ", equipo[i]->nombre);
+        y = 3;
+        x += 36 * num;
+        moveTo(x, y);
+
+        if (num == 1)
+            setColor(FCYA, BBLK);
+        else
+            setColor(FYEL, BBLK);
+
+        printf("E Q U I P O  %d:", num + 1);
+        setColor(FWHT, BBLK);
+
+        y++;
+
+        moveTo(x, ++y);
+        printf("Jugadores:");
+        for (int i = 0; i < tam; i++)
+        {
+            moveTo(x + 13, y++);
+            printf("%s ", equipos[num].jugadores[i]->nombre);
+        }
+
+
+        moveTo(x, ++y);
+        printf("Promedio:    %.2f", equipos[num].promedio);
+        moveTo(x, ++y);
+        printf("Varianza:    %.2f", equipos[num].varianza);
+        moveTo(x, ++y);
+        //printf("Dispersión: %.2f", dispersion);
+        printf("Predicción:  %.2f%%", equipos[num].probabilidadGanar * 100);
+
     }
-    float promedio = calcularPromedio(equipo, tam);
-    float varianza = calcularVarianza(equipo, tam, promedio);
-    // float dispersion = calcularDispersion(equipo, tam);
-
-    printf("%s", equipo[tam - 1]->nombre);
-
-    moveTo(x + 4, ++y);
-    printf("Promedio:        %.2f", promedio);
-    moveTo(x + 4, ++y);
-    printf("Varianza:        %.2f", varianza);
-    moveTo(x + 4, ++y);
-    //printf("Dispersión: %.2f", dispersion);
-    float probabilidad = num == 0 ? proba : 1 - proba;
-    probabilidad *= 100;
-    printf("Prob. de Ganar:  %.2f%%", probabilidad);
-    setColor(FWHT, BBLK);
 }
