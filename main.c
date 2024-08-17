@@ -452,14 +452,17 @@ void calcularProbabilidadDeGanar(struct un_equipo *eq1, struct un_equipo *eq2, i
     eq1->promedio = calcularPromedio(eq1->jugadores, tam_equipo);
     eq2->promedio = calcularPromedio(eq2->jugadores, tam_equipo);
 
-    const float modificador = 0.5;
-    float esperanza = (eq1->promedio - eq2->promedio) * modificador;
+    const float modificador = 1;
+    //float esperanza = (eq1->promedio + sqrt(eq1->varianza) - (eq2->promedio + sqrt(eq2->varianza))) * modificador;
+    float esperanza = eq1->promedio - eq2->promedio;
+    //esperanza *= modificador;
 
     eq1->varianza = calcularVarianza(eq1->jugadores, tam_equipo, eq1->promedio);
     eq2->varianza  = calcularVarianza(eq2->jugadores, tam_equipo, eq2->promedio);
     float varianza = eq1->varianza + eq2->varianza;
+    //varianza *= modificador;
 
-    eq1->probabilidadGanar = 1 - phi(0 - esperanza / sqrt(varianza));
+    eq1->probabilidadGanar = 1 - phi((0 - esperanza / sqrt(varianza)) * 2);
     eq2->probabilidadGanar = 1 - eq1->probabilidadGanar;
 }
 
@@ -520,7 +523,7 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_equipo 
         calcularProbabilidadDeGanar(&temp_eq1, &temp_eq2, tam_equipo);
 
 
-        balance = fabs(0.5 - temp_eq1.probabilidadGanar);
+        balance = fabs(temp_eq1.probabilidadGanar - 0.5);
 
         // Si la diferencia es menor, actualizamos los equipos
         if (balance < mejor_balance)
@@ -539,6 +542,91 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_equipo 
     free(temp_eq1.jugadores);
     free(temp_eq2.jugadores);
     return;
+}
+
+float calcularAtaqueDeEquipo(struct un_equipo eq, int tam)
+{
+    float ataqueTotal = 0;
+
+    float atkPeso = 0.45;
+    float gamPeso = 0.15;
+    float velPeso = 0.05;
+    float resPeso = 0.10;
+    float conPeso = 0.05;
+    float visPeso = 0.15;
+
+    float atkProm = 0;
+    float gamProm = 0;
+    float velProm = 0;
+    float resProm = 0;
+    float conProm = 0;
+    float visProm = 0;    
+    for (int i = 0; i < tam; i++)
+    {
+        atkProm += eq.jugadores[i]->ataque;
+        gamProm += eq.jugadores[i]->gambeta;
+        velProm += eq.jugadores[i]->velocidad;
+        resProm += eq.jugadores[i]->resistencia;
+        conProm += eq.jugadores[i]->control;
+        visProm += eq.jugadores[i]->vision;
+    }
+    atkProm /= tam;
+    gamProm /= tam;
+    velProm /= tam;
+    resProm /= tam;
+    conProm /= tam;
+    visProm /= tam;
+
+    ataqueTotal += atkProm * atkPeso;
+    ataqueTotal += gamProm * gamPeso;
+    ataqueTotal += velProm * velPeso;
+    ataqueTotal += resProm * resPeso;
+    ataqueTotal += conProm * conPeso;
+    ataqueTotal += visProm * visPeso;
+
+    return ataqueTotal;
+}
+float calcularDefensaDeEquipo(struct un_equipo eq, int tam)
+{
+    float defensaTotal = 0;
+
+    float defPeso = 0.50;
+    float velPeso = 0.15;
+    float resPeso = 0.10;
+    float cuePeso = 0.10;
+    float porPeso = 0.10;
+    float juePeso = 0.05;
+
+    float defProm = 0;
+    float velProm = 0;
+    float resProm = 0;
+    float cueProm = 0;
+    float porProm = 0;
+    float jueProm = 0;    
+    for (int i = 0; i < tam; i++)
+    {
+        defProm += eq.jugadores[i]->defensa;
+        velProm += eq.jugadores[i]->velocidad;
+        resProm += eq.jugadores[i]->resistencia;
+        cueProm += eq.jugadores[i]->cuerpo;
+        porProm += eq.jugadores[i]->porteria;
+        jueProm += eq.jugadores[i]->juego_equipo;
+    }
+    defProm /= tam;
+    velProm /= tam;
+    resProm /= tam;
+    cueProm /= tam;
+    porProm /= tam;
+    jueProm /= tam;
+
+    defensaTotal += defProm * defPeso;
+    defensaTotal += velProm * velPeso;
+    defensaTotal += resProm * resPeso;
+    defensaTotal += cueProm * cuePeso;
+    defensaTotal += porProm * porPeso;
+    defensaTotal += jueProm * juePeso;
+    return defensaTotal;
+    
 }
 
 void mostrarEquipos(struct un_equipo *equipos, int tam)
@@ -565,18 +653,42 @@ void mostrarEquipos(struct un_equipo *equipos, int tam)
         printf("Jugadores:");
         for (int i = 0; i < tam; i++)
         {
-            moveTo(x + 13, y++);
+            moveTo(x + 14, y++);
             printf("%s ", equipos[num].jugadores[i]->nombre);
         }
 
 
         moveTo(x, ++y);
-        printf("Promedio:    %.2f", equipos[num].promedio);
+        printf("ESTADISTICAS:");
+
+        float ataque = calcularAtaqueDeEquipo(equipos[num], tam);
+
         moveTo(x, ++y);
-        printf("Varianza:    %.2f", equipos[num].varianza);
+        printf("Ataque:");
+        moveTo(x + 14, y);
+        printf("%.2f", ataque);
+
+        moveTo(x, ++y);
+        float defensa = calcularDefensaDeEquipo(equipos[num], tam);
+        printf("Defensa:");
+        moveTo(x + 14, y);
+        printf("%.2f", defensa);
+
+        y++;
+        moveTo(x, ++y);
+        printf("Habilidad:");
+        moveTo(x + 14, y);
+        printf("%.2f", equipos[num].promedio);
+
+        moveTo(x, ++y);
+        printf("Varianza:");
+        moveTo(x + 14, y);
+        printf("%.2f", equipos[num].varianza);
+        
         moveTo(x, ++y);
         //printf("Dispersión: %.2f", dispersion);
-        printf("Predicción:  %.2f%%", equipos[num].probabilidadGanar * 100);
-
+        printf("Predicción:");
+        moveTo(x + 14, y);
+        printf("%.2f%%", equipos[num].probabilidadGanar * 100);
     }
 }
