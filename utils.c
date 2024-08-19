@@ -2,6 +2,13 @@
 #include <windows.h>
 #include "utils.h"
 
+void enableANSI();
+void setFontSize(int);
+void setupTerminal();
+void clearScreen();
+void setColor(int, int);
+void resetColor();
+void moveTo(int, int);
 
 void enableANSI() {
     // Obtener el manejador de la consola
@@ -11,6 +18,37 @@ void enableANSI() {
     GetConsoleMode(hOut, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
+}
+
+void setFontSize(int fontSize)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE) {
+        printf("Error: Unable to get handle to console.\n");
+        return;
+    }
+
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof(CONSOLE_FONT_INFOEX);
+    if (!GetCurrentConsoleFontEx(hConsole, FALSE, &cfi)) {
+        printf("Error: Unable to get current console font info.\n");
+        return;
+    }
+
+    // Establecer el tamaño de la fuente
+    cfi.dwFontSize.X = fontSize;
+    cfi.dwFontSize.Y = fontSize;
+
+    if (!SetCurrentConsoleFontEx(hConsole, FALSE, &cfi)) {
+        printf("Error: Unable to set console font size.\n");
+        return;
+    }
+}
+
+void setupTerminal()
+{
+    enableANSI();
+    setFontSize(18);
 }
 
 void clearScreen() {

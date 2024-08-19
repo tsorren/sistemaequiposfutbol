@@ -16,7 +16,7 @@
 #define BCYA 46
 #define BWHT 47
 
-void enableANSI();
+void setupTerminal();
 void clearScreen();
 
 void setColor(int , int);

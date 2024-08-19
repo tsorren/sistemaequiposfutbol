@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <conio.h>
 
 #include "utils.h"
 
 struct un_jugador
 {
     int id;
-    char nombre[16 + 1];
+    char nombre[10 + 1];
 
     float resistencia;
     float velocidad;
@@ -33,117 +34,156 @@ struct un_equipo
     float probabilidadGanar;
 };
 
-float calcularPuntaje(struct un_jugador*);
-void moverPunteroADatos(FILE*);
+void inicioDeSistema(int*);
+void moverPunteroA(FILE*, int);
 int calcularCantidadDeJugadores(FILE*);
+void mostrarPlantillaCarga(int, int);
+void ingresarNuevosJugadores(FILE *, char*, int*);
+void cargarNuevoJugadorEnArchivo(FILE *, int, struct un_jugador);
 int siguienteComa(char*, int);
 float conseguirSiguienteFloat(char*, int*, int*);
+float calcularPuntaje(struct un_jugador*);
 void cargarListaDeJugadores(FILE*, struct un_jugador*);
 void mostrarJugador(struct un_jugador);
 void jugadorFueElegido(int);
-void elegirJugadores(struct un_jugador***, struct un_jugador*, const int);
+void elegirJugadores(struct un_jugador***, struct un_jugador*, const int, int*);
 void ordenarListaDeJugadores(struct un_jugador**, const int);
-void mostrarListadoJugadores(struct un_jugador*, const int, const int);
+void mostrarListadoJugadores(struct un_jugador*, const int, const int, int*);
 void ordenarEquipo(struct un_equipo*, const int);
 float calcularPromedio(struct un_jugador**, int);
 float calcularVarianza(struct un_jugador **, int, int);
 float calcularDispersion(struct un_jugador**, int);
 void calcularProbabilidadDeGanar(struct un_equipo*, struct un_equipo*, int);
 void generarEquiposBalanceadamente(struct un_jugador**, struct un_equipo*, struct un_equipo*, int);
+void elegirEquiposManualmente(struct un_equipo*, struct un_equipo*, int,  struct un_jugador**);
 void mostrarEquipos(struct un_equipo*, int);
 
 int main(void)
 {
-    FILE *archivo_jugadores = fopen("jugadores.csv", "rt");
-    const int cantidad_jugadores = calcularCantidadDeJugadores(archivo_jugadores);
-    struct un_jugador *jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
-    int input;
+    const char dir_archivo[] = "jugadores.csv";
+    FILE *archivo_jugadores;
+    int cantidad_jugadores;
+    struct un_jugador *jugadores;
+    struct un_jugador **jugadores_disponibles;
+    struct un_equipo equipo1, equipo2;
+
+    int input = 0;
     int tam_equipo = 0;
+    int pos_y;
 
-    cargarListaDeJugadores(archivo_jugadores, jugadores);
-    ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
-    fclose(archivo_jugadores);
-
-    enableANSI();
-    clearScreen();
-    printf("   S I S T E M A    D E    G E S T I Ó N    D E    E Q U I P O S\n");
-    printf("   1: Generar equipos balanceadamente\n");
-    printf("   2: Evaluar balance de equipos\n");
-
-    setColor(FGRN, BBLK);
-    printf("   Elija una opción: ");
-    scanf("%d", &input);
-    setColor(FWHT, BBLK);
-
-    _sleep(1000);
-    clearScreen();
-
-    mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo);
-
-    moveTo(3, 37);
-    printf("Ingrese el tamaño de los equipos: ");
-    scanf("%d", &tam_equipo);
-    moveTo(3, 37);
-    printf("                                      ");
-
-
-    struct un_jugador **jugadores_disponibles = malloc(tam_equipo * 2 * sizeof(struct un_jugador *));
-
-    elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2);
-
-    struct un_equipo equipo1;
-    equipo1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
-
-    struct un_equipo equipo2;
-    equipo2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador *));
-
-
-    if (input == 1)
+    setupTerminal();
+    inicioDeSistema(&input);
+    while(input != 99)
     {
-        generarEquiposBalanceadamente(jugadores_disponibles, &equipo1, &equipo2, tam_equipo * 2);
-    }
-    else if (input == 2)
-    {
-        for (int i = 0; i < tam_equipo; i++)
+        pos_y = 0;
+        archivo_jugadores = fopen(dir_archivo, "rt");
+        cantidad_jugadores = calcularCantidadDeJugadores(archivo_jugadores);
+        jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
+        cargarListaDeJugadores(archivo_jugadores, jugadores);
+        ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
+        fclose(archivo_jugadores);
+
+        if(input == 3)
         {
-            equipo1.jugadores[i] = jugadores_disponibles[i];
-            equipo2.jugadores[i] = jugadores_disponibles[i + tam_equipo];
-            
-            equipo1.num = 0;
-            equipo2.num = 1;
+            ingresarNuevosJugadores(archivo_jugadores, dir_archivo, &cantidad_jugadores);
+
+            free(jugadores);
+            jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
+
+            archivo_jugadores = fopen(dir_archivo, "rt");
+            cargarListaDeJugadores(archivo_jugadores, jugadores);
+            ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
+            fclose(archivo_jugadores);
         }
-        calcularProbabilidadDeGanar(&equipo1, &equipo2, tam_equipo);
+
+        _sleep(1000);
+        clearScreen();
+
+        mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, &pos_y);
+
+        moveTo(3, pos_y);
+        printf("Ingrese el tamaño de los equipos: ");
+        scanf("%d", &tam_equipo);
+        moveTo(3, pos_y);
+        printf("                                      ");
+
+        jugadores_disponibles = malloc(tam_equipo * 2 * sizeof(struct un_jugador *));
+
+        elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2, &pos_y);
+
+        equipo1.num = 0;
+        equipo1.probabilidadGanar = 0;
+        equipo1.promedio = 0;
+        equipo1.varianza = 0;
+
+        equipo2.num = 0;
+        equipo2.probabilidadGanar = 0;
+        equipo2.promedio = 0;
+        equipo2.varianza = 0;
+
+        equipo1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
+        equipo2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
+
+
+        if (input == 1)
+        {
+            generarEquiposBalanceadamente(jugadores_disponibles, &equipo1, &equipo2, tam_equipo * 2);
+        }
+        else if (input == 2)
+        {
+            elegirEquiposManualmente(&equipo1, &equipo2, tam_equipo, jugadores_disponibles);
+            calcularProbabilidadDeGanar(&equipo1, &equipo2, tam_equipo);
+        }
+        struct un_equipo equipos[2] = {equipo1, equipo2};
+
+        //float probabilidadDeGanar = 
+        mostrarEquipos(equipos, tam_equipo);
+        moveTo(3, pos_y);
+
+        free(jugadores);
+        free(jugadores_disponibles);
+        free(equipo1.jugadores);
+        free(equipo2.jugadores);
+        _sleep(1500);
+        _getch();
+        inicioDeSistema(&input);
     }
-    struct un_equipo equipos[2] = {equipo1, equipo2};
-
-    //float probabilidadDeGanar = 
-    mostrarEquipos(equipos, tam_equipo);
-
-    moveTo(2, 42);
-
-    free(jugadores);
-    free(equipo1.jugadores);
-    free(equipo2.jugadores);
-
+    clearScreen();
     return 0;
 }
 
+void inicioDeSistema(int *input)
+{
+    clearScreen();
+    printf("\n");
+    printf("                    S I S T E M A\n");
+    printf("                         D E\n");
+    printf("         G E S T I Ó N   D E   E Q U I P O S\n\n");
+    printf("         Opciones:\n");
+    printf("            1:  Generar equipos balanceadamente\n");
+    printf("            2:  Evaluar balance de equipos\n");
+    printf("            3:  Añadir nuevo jugador\n");
+    printf("            99: Salir\n");
 
+    setColor(FGRN, BBLK);
+    printf("\n         Elija una opción: ");
+    setColor(FWHT, BBLK);
+    scanf("%d", input);
+}
 
 // Función para calcular el puntaje
 float calcularPuntaje(struct un_jugador *jugador)
 {
-    // Pesos para cada habilidad
-    float w_R = 0.75; // Resistencia
-    float w_V = 0.5;  // Velocidad
-    float w_C = 1.0;  // Control del balón
-    float w_D = 0.75; // Defensa
-    float w_AT = 1.0; // Ataque
-    float w_G = 0.5;  // Gambeta
-    float w_CU = 0.5; // Cuerpo
-    float w_P = 0.5;   // Porteria
-    float w_VJ = 1.0;  // Visión de juego
-    float w_JE = 0.75; // Juego en equipo
+    float w_R  = 0.1034;  // Resistencia
+    float w_V  = 0.06897; // Velocidad
+    float w_C  = 0.1379;  // Control del balón
+    float w_D  = 0.1034;  // Defensa
+    float w_AT = 0.1379;  // Ataque
+    float w_G  = 0.06897; // Gambeta
+    float w_CU = 0.06897; // Cuerpo
+    float w_P  = 0.06897; // Porteria
+    float w_VJ = 0.1379;  // Visión de juego
+    float w_JE = 0.1034;  // Juego en equipo
 
     //  Suma de los pesos
     float suma_pesos = 0;
@@ -169,20 +209,18 @@ float calcularPuntaje(struct un_jugador *jugador)
     puntaje += w_P * jugador->porteria;
     puntaje += w_VJ * jugador->vision;
     puntaje += w_JE * jugador->juego_equipo;
-    puntaje /= suma_pesos;
+    //puntaje /= suma_pesos;
 
     return puntaje;
 }
 
-void moverPunteroADatos(FILE *archivo)
+void moverPunteroA(FILE *archivo, int linea)
 {
-
     const int MAX_LENGTH = 150;
     char buffer[MAX_LENGTH];
 
-    const int cant = 1;
     fseek(archivo, 0, SEEK_SET);
-    for (int i = 0; i < cant; i++)
+    for (int i = 0; i < linea; i++)
     {
         fgets(buffer, MAX_LENGTH, archivo);
     }
@@ -192,10 +230,10 @@ int calcularCantidadDeJugadores(FILE *archivo)
 {
     const int MAX_LENGTH = 150;
     char buffer[MAX_LENGTH];
-
-    moverPunteroADatos(archivo);
-
     int cantidad = 0;
+
+    moverPunteroA(archivo, 1);
+
     while (fgets(buffer, MAX_LENGTH, archivo))
     {
         cantidad++;
@@ -204,6 +242,116 @@ int calcularCantidadDeJugadores(FILE *archivo)
     // printf("Cantidad de jugadores disponibles: %d", cantidad);
 
     return cantidad;
+}
+
+void ingresarNuevosJugadores(FILE *arch, char *dir_archivo, int *cant_j)
+{
+    arch = fopen(dir_archivo, "rt+");
+    int p_X = 8;
+    int x;
+    int y;
+
+    struct un_jugador jugador;
+    int continuar = 1;
+    while(continuar != 0)
+    {
+        x = p_X;
+        y = 3;
+        jugador.id = *cant_j;
+        mostrarPlantillaCarga(x, y);
+
+        x = p_X + 22;
+        moveTo(x, ++y);
+        scanf("%s", jugador.nombre);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.resistencia);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.velocidad);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.control);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.defensa);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.ataque);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.gambeta);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.cuerpo);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.porteria);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.vision);
+        moveTo(x, ++y);
+        scanf("%f", &jugador.juego_equipo);
+        jugador.puntaje_general = calcularPuntaje(&jugador);
+
+        moveTo(p_X + 3, ++y);
+        printf("Puntaje: ");
+        moveTo(x, y);
+        printf("%.2f", jugador.puntaje_general);
+
+        cargarNuevoJugadorEnArchivo(arch, *cant_j, jugador);
+
+        (*cant_j)++;
+
+        y += 2;
+        moveTo(p_X, y);
+        printf("Continuar carga? (0/1): ");
+        scanf("%d", &continuar);
+    }
+    fclose(arch);
+}
+
+void mostrarPlantillaCarga(int p_X, int y)
+{
+    for (int i = 0; i < 20; i++)
+    {
+        moveTo(0, i);
+        printf("                                               ");
+    }
+
+    moveTo(p_X, y);
+    printf("CARGA DE JUGADOR:");
+        
+    moveTo(p_X + 3, ++y);
+    printf("Nombre: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Resistencia: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Velocidad: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Control: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Defensa: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Ataque: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Gambeta: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Cuerpo: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Porteria: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Vision: ");
+    
+    moveTo(p_X + 5, ++y);
+    printf("Juego en Equipo: ");
+}
+
+void cargarNuevoJugadorEnArchivo(FILE *arch, int cant_j, struct un_jugador j)
+{
+    moverPunteroA(arch, cant_j + 1);
+    fprintf(arch, "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+        j.nombre, j.resistencia, j.velocidad, j.control, j.defensa, j.ataque, j.gambeta, j.cuerpo, j.porteria, j.vision, j.juego_equipo, j.puntaje_general);
 }
 
 int siguienteComa(char *buffer, int inicio)
@@ -231,7 +379,7 @@ float conseguirSiguienteFloat(char *buffer, int *inicio, int *fin)
 
 void cargarListaDeJugadores(FILE *archivo, struct un_jugador *jugadores)
 {
-    moverPunteroADatos(archivo);
+    moverPunteroA(archivo, 1);
     struct un_jugador jugador;
 
     int contador = 0;
@@ -268,48 +416,12 @@ void cargarListaDeJugadores(FILE *archivo, struct un_jugador *jugadores)
     }
 }
 
-void mostrarJugador(struct un_jugador jugador)
-{
-    const int paddingX = 5;
-    const int paddingY = 11;
-    int x = floor(jugador.id / 5) * 30 + paddingX;
-    int y = (jugador.id % 5) * 5 + paddingY;
-    moveTo(x, y);
-    printf("ID: %d\n", jugador.id);
-    moveTo(x, ++y);
-    printf("    Nombre: %s\n", jugador.nombre);
-
-    /*
-    printf("Resistencia: %.2f\n", jugador.resistencia);
-    printf("Velocidad: %.2f\n", jugador.velocidad);
-    printf("Control: %.2f\n", jugador.control);
-    printf("Defensa: %.2f\n", jugador.defensa);
-    printf("Ataque:%.2f\n", jugador.ataque);
-    printf("Vision: %.2f\n", jugador.vision);
-    printf("Juego en equipo: %.2f\n", jugador.juego_equipo);
-    */
-    moveTo(x, ++y);
-    printf("    PUNTAJE : %.2f\n", jugador.puntaje_general);
-}
-
-void jugadorFueElegido(int id)
-{
-    const int paddingX = 5;
-    const int paddingY = 11;
-    int x = floor(id / 5) * 30 + paddingX;
-    int y = (id % 5) * 5 + paddingY;
-    moveTo(x + 8, y);
-    setColor(FGRN, BBLK);
-    printf("ELEGIDO");
-    setColor(FWHT, BBLK);
-}
-
-void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores)
+void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores, int* pos_y)
 {
     int indice_jugador = 0;
     int contador = 0;
 
-    moveTo(3, 37);
+    moveTo(3, *pos_y);
     printf("Elija ");
     setColor(FGRN, BBLK);
     printf("%d", cant_jugadores - contador);
@@ -320,12 +432,12 @@ void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugad
     {
         (*jugadores_disponibles)[contador] = &jugadores[indice_jugador];
         jugadorFueElegido(indice_jugador);
-        moveTo(3, 37);
+        moveTo(3, *pos_y);
         printf("                        ");
         contador++;
         if (contador < cant_jugadores)
         {
-            moveTo(3, 37);
+            moveTo(3, *pos_y);
             printf("Elija ");
             setColor(FGRN, BBLK);
             printf("%d", cant_jugadores - contador);
@@ -355,38 +467,67 @@ void ordenarListaDeJugadores(struct un_jugador **jugadores, const int tam)
     }
 }
 
-void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo)
+void mostrarJugador(struct un_jugador jugador)
 {
-    const int yStart = 2;
-    int y = yStart;
-    moveTo(3, y);
+    const int padding_x = 5;
+    const int padding_y = 11;
+    int x = padding_x + (jugador.id % 5) * 23 ;
+    int y = padding_y + floor(jugador.id / 5) * 4;
+    moveTo(x, y);
+    printf("ID: %d", jugador.id);
+    moveTo(x, ++y);
+    printf("    Nombre: %s", jugador.nombre);
+
+    moveTo(x, ++y);
+    printf("    PUNTAJE: %.2f", jugador.puntaje_general);
+}
+
+void jugadorFueElegido(int id)
+{
+    const int paddingX = 5;
+    const int paddingY = 11;
+    int x = floor(id % 5) * 23 + paddingX;
+    int y = (id / 5) * 4 + paddingY;
+    moveTo(x + 8, y);
+    setColor(FGRN, BBLK);
+    printf("ELEGIDO");
+    setColor(FWHT, BBLK);
+}
+
+void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo, int* pos_y)
+{
+    const int padding_y = 2;
+    *pos_y = padding_y;
+    moveTo(3, *pos_y);
     printf(" -------------------------------------------------------------------------------------------------------------------");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("          _ _   _  ____    _    ____   ___  ____  _____ ____       ");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("         | | | | |/ ___|  / \\  |  _ \\ / _ \\|  _ \\| ____/ ___|      ");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("      _  | | | | | |  _  / _ \\ | | | | | | | |_) |  _| \\___ \\      ");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("     | |_| | |_| | |_| |/ ___ \\| |_| | |_| |  _ <| |___ ___) |     ");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("      \\___/ \\___/ \\____/_/   \\_\\____/ \\___/|_| \\_\\_____|____/      ");
-    moveTo(28, ++y);
+    moveTo(28, ++(*pos_y));
     printf("                                                                   ");
-    moveTo(3, ++y);
+    moveTo(3, ++(*pos_y));
     printf(" -------------------------------------------------------------------------------------------------------------------");
 
-    y = yStart + 1;
+    (*pos_y) = padding_y + 1;
     int j = 0;
-    while (j < 5 * 5 + 7)
+    while (j < (ceil(cantidad_jugadores / 5) + 1) * 4 + 7)
     {
-        moveTo(3, y + j);
+        moveTo(3, (*pos_y) + j);
         printf("|");
-        moveTo(119, y + j);
+        moveTo(119, (*pos_y) + j);
         printf("|");
         j++;
     }
-    moveTo(3, y + j);
+
+    (*pos_y) += j;
+    moveTo(3, *pos_y);
     printf(" -------------------------------------------------------------------------------------------------------------------");
 
     for (int i = 0; i < cantidad_jugadores; i++)
@@ -394,6 +535,7 @@ void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_ju
         jugadores[i].id = i;
         mostrarJugador(jugadores[i]);
     }
+    (*pos_y) += 2;
 }
 
 void ordenarEquipo(struct un_equipo *equipo, const int tam)
@@ -522,7 +664,6 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_equipo 
 
         calcularProbabilidadDeGanar(&temp_eq1, &temp_eq2, tam_equipo);
 
-
         balance = fabs(temp_eq1.probabilidadGanar - 0.5);
 
         // Si la diferencia es menor, actualizamos los equipos
@@ -542,6 +683,18 @@ void generarEquiposBalanceadamente(struct un_jugador **j_disp, struct un_equipo 
     free(temp_eq1.jugadores);
     free(temp_eq2.jugadores);
     return;
+}
+
+void elegirEquiposManualmente(struct un_equipo *eq1, struct un_equipo *eq2, int tam, struct un_jugador **j_disp)
+{    
+    for (int i = 0; i < tam; i++)
+    {
+        eq1->jugadores[i] = j_disp[i];
+        eq2->jugadores[i] = j_disp[i + tam];
+        
+        eq1->num = 0;
+        eq2->num = 1;
+    }
 }
 
 float calcularAtaqueDeEquipo(struct un_equipo eq, int tam)
