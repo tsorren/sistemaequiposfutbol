@@ -1,3 +1,6 @@
+#ifndef UTILS_H_INCLUDED
+#define UTILS_H_INCLUDED
+
 #define FBLK 30
 #define FRED 31
 #define FGRN 32
@@ -22,3 +25,5 @@ void clearScreen();
 void setColor(int , int);
 void resetColor();
 void moveTo(int, int);
+
+#endif // UTILS_H

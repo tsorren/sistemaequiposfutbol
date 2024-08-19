@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+
 #include "utils.h"
 
 void enableANSI();
@@ -48,7 +49,7 @@ void setFontSize(int fontSize)
 void setupTerminal()
 {
     enableANSI();
-    setFontSize(18);
+    setFontSize(20);
 }
 
 void clearScreen() {
