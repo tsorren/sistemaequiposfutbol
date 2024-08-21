@@ -71,31 +71,20 @@ float calcularDispersion(struct un_jugador **equipo, int tam_equipo)
     return equipo[tam_equipo - 1]->puntaje_general - equipo[0]->puntaje_general;
 }
 
-float phi(float x)
+void generarArrayEstadisticasDeJugador(struct un_jugador j, float* estadisticas)
 {
-    const float M_SQRT1_2 = 0.70710678118;
-    float proba = 0.5 * erfc(x * M_SQRT1_2);
-    return proba;
-}
-
-void calcularProbabilidadDeGanar(struct un_equipo *eq1, struct un_equipo *eq2, int tam_equipo)
-{
-    eq1->promedio = calcularPromedio(eq1->jugadores, tam_equipo);
-    eq2->promedio = calcularPromedio(eq2->jugadores, tam_equipo);
-
-    const float modificador = 5;
-    //float esperanza = (eq1->promedio + sqrt(eq1->varianza) - (eq2->promedio + sqrt(eq2->varianza))) * modificador;
-    float esperanza = eq1->promedio - eq2->promedio;
-    esperanza *= modificador;
-
-    eq1->varianza = calcularVarianza(eq1->jugadores, tam_equipo, eq1->promedio);
-    eq2->varianza  = calcularVarianza(eq2->jugadores, tam_equipo, eq2->promedio);
-    float varianza = ((tam_equipo - 1) * eq1->varianza + (tam_equipo - 1) * eq2->varianza) / (2 * tam_equipo - 2);
-    varianza =  varianza * sqrt(2.0 / tam_equipo);
-    //varianza *= modificador;
-
-    eq1->probabilidadGanar = 1 - phi((esperanza - 0) / varianza);
-    eq2->probabilidadGanar = 1 - eq1->probabilidadGanar;
+    int i = 0;
+    estadisticas[i++] = j.resistencia;
+    estadisticas[i++] = j.velocidad;
+    estadisticas[i++] = j.control;
+    estadisticas[i++] = j.defensa;
+    estadisticas[i++] = j.ataque;
+    estadisticas[i++] = j.gambeta;
+    estadisticas[i++] = j.cuerpo;
+    estadisticas[i++] = j.porteria;
+    estadisticas[i++] = j.vision;
+    estadisticas[i++] = j.juego_equipo;
+    estadisticas[i++] = j.puntaje_general;
 }
 
 void ordenarListaDeJugadores(struct un_jugador **jugadores, const int tam)
@@ -117,6 +106,33 @@ void ordenarListaDeJugadores(struct un_jugador **jugadores, const int tam)
 }
 
 // EQUIPOS
+
+float phi(float x)
+{
+    const float M_SQRT1_2 = 0.70710678118;
+    float proba = 0.5 * erfc(x * M_SQRT1_2);
+    return proba;
+}
+
+void calcularProbabilidadDeGanar(struct un_equipo *eq1, struct un_equipo *eq2, int tam_equipo)
+{
+    eq1->promedio = calcularPromedio(eq1->jugadores, tam_equipo);
+    eq2->promedio = calcularPromedio(eq2->jugadores, tam_equipo);
+
+    const float modificador = 3;
+    //float esperanza = (eq1->promedio + sqrt(eq1->varianza) - (eq2->promedio + sqrt(eq2->varianza))) * modificador;
+    float esperanza = eq1->promedio - eq2->promedio;
+    esperanza *= modificador;
+
+    eq1->varianza = calcularVarianza(eq1->jugadores, tam_equipo, eq1->promedio);
+    eq2->varianza  = calcularVarianza(eq2->jugadores, tam_equipo, eq2->promedio);
+    float desvio = ((tam_equipo - 1) * eq1->varianza + (tam_equipo - 1) * eq2->varianza) / (2 * tam_equipo - 2);
+    desvio *= sqrt(2.0 / tam_equipo);
+    //varianza *= modificador;
+
+    eq1->probabilidadGanar = 1 - phi((esperanza - 0) / desvio);
+    eq2->probabilidadGanar = 1 - eq1->probabilidadGanar;
+}
 
 void ordenarEquipo(struct un_equipo *equipo, const int tam)
 {

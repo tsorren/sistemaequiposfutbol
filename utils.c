@@ -64,6 +64,11 @@ void setColor(int textColor, int bgColor) {
     printf("\033[%d;%dm", textColor, bgColor);
 }
 
+void setColorRGB(int R, int G, int B)
+{
+    printf("\033[38;2;%d;%d;%dm", R, G, B);
+}
+
 void resetColor() {
     // ANSI code to reset text and background color to default
     printf("\033[0m");

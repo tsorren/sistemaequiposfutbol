@@ -23,6 +23,7 @@ void moverPunteroA(FILE *archivo, int linea)
     for (int i = 0; i < linea; i++)
     {
         fgets(buffer, MAX_LENGTH, archivo);
+        fseek(archivo, 0, SEEK_CUR);
     }
 }
 
@@ -105,9 +106,13 @@ void ingresarNuevosJugadores(FILE *arch, char *dir_archivo, int *cant_j)
 void cargarNuevoJugadorEnArchivo(FILE *arch, int cant_j, struct un_jugador j)
 {
     moverPunteroA(arch, cant_j + 1);
-    fprintf(arch, "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+    
+    fflush(arch);
+
+    fprintf(arch, "%s,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f\n",
         j.nombre, j.resistencia, j.velocidad, j.control, j.defensa, j.ataque, j.gambeta, j.cuerpo, j.porteria, j.vision, j.juego_equipo, j.puntaje_general);
-}
+
+    fflush(arch);}
 
 int siguienteComa(char *buffer, int inicio)
 {
@@ -168,5 +173,82 @@ void cargarListaDeJugadores(FILE *archivo, struct un_jugador *jugadores)
 
         jugadores[contador] = jugador;
         contador++;
+    }
+}
+
+void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int cantidad_jugadores, int padding_x, int *pos_y)
+{
+    int grabar = 1;
+    int continuar = 1;
+    int continuar_campos = 1;
+
+    char campo[2] = "";
+    float val;
+    int id;
+
+    while(continuar != 0)
+    {
+        mostrarTablaDeEstadisticas(jugadores, cantidad_jugadores, padding_x, pos_y);
+        moveTo(padding_x + 1, *pos_y);
+        printf("Ingresar ID: ");
+        scanf("%d", &id);
+        moveTo(padding_x + 1, *pos_y);
+        printf("                                                                ");
+
+        continuar_campos = 1;
+        grabar = 1;
+        float *campo_reemplazar;
+        while(continuar_campos != 0)
+        {
+            moveTo(padding_x + 1, *pos_y);
+            printf("Ingresar campo (R / V / C / D / A / G / CU / P / V / JE): ");
+            scanf("%s", campo);
+            moveTo(padding_x + 1, *pos_y);
+            printf("                                                                ");
+            
+            if(!strcmp(campo, "r") || !strcmp(campo, "R")) campo_reemplazar = &jugadores[id].resistencia;            
+            else if(!strcmp(campo, "v") || !strcmp(campo, "V")) campo_reemplazar = &jugadores[id].velocidad;            
+            else if(!strcmp(campo, "c") || !strcmp(campo, "C")) campo_reemplazar = &jugadores[id].control;            
+            else if(!strcmp(campo, "d") || !strcmp(campo, "D")) campo_reemplazar = &jugadores[id].defensa;            
+            else if(!strcmp(campo, "a") || !strcmp(campo, "A")) campo_reemplazar = &jugadores[id].ataque;            
+            else if(!strcmp(campo, "g") || !strcmp(campo, "G")) campo_reemplazar = &jugadores[id].gambeta;            
+            else if(!strcmp(campo, "cu") || !strcmp(campo, "CU")) campo_reemplazar = &jugadores[id].cuerpo;            
+            else if(!strcmp(campo, "p") || !strcmp(campo, "P")) campo_reemplazar = &jugadores[id].porteria;            
+            else if(!strcmp(campo, "v") || !strcmp(campo, "V")) campo_reemplazar = &jugadores[id].vision;            
+            else if(!strcmp(campo, "je") || !strcmp(campo, "JE")) campo_reemplazar = &jugadores[id].juego_equipo;
+            
+            moveTo(padding_x + 1, *pos_y);
+            printf("Reemplazar %.2f por: ", *campo_reemplazar);
+            scanf("%f", &val);
+            moveTo(padding_x + 1, *pos_y);
+            printf("                                                                ");
+
+            *campo_reemplazar = val;
+
+            jugadores[id].puntaje_general = calcularPuntaje(&jugadores[id]);
+
+            moveTo(padding_x + 1, *pos_y);
+            printf("Continuar modificando campos? (0 / 1): ");
+            scanf("%d", &continuar_campos);
+            moveTo(padding_x + 1, *pos_y);
+            printf("                                                                ");
+            
+        }
+        moveTo(padding_x + 1, *pos_y);
+        printf("Guardar en archivo? (0 / 1): ");
+        scanf("%d", &grabar);
+        moveTo(padding_x + 1, *pos_y);
+        printf("                                                                ");
+
+        if(grabar == 1)
+        {
+            cargarNuevoJugadorEnArchivo(archivo, id, jugadores[id]);
+        }
+
+        moveTo(padding_x + 1, *pos_y);
+        printf("Continuar? (0 / 1): ");
+        scanf("%d", &continuar);
+        moveTo(padding_x + 1, *pos_y);
+        printf("                                                                ");
     }
 }

@@ -12,5 +12,6 @@ void cargarNuevoJugadorEnArchivo(FILE *, int, struct un_jugador);
 int siguienteComa(char*, int);
 float conseguirSiguienteFloat(char*, int*, int*);
 void cargarListaDeJugadores(FILE*, struct un_jugador*);
+void modificarArchivoJugadores(FILE *, struct un_jugador *, int, int, int*);
 
 #endif // FILES_H_INCLUDED

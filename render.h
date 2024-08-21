@@ -10,6 +10,7 @@ void jugadorFueElegido(int);
 
 void mostrarJugador(struct un_jugador);
 void mostrarListadoJugadores(struct un_jugador*, const int, const int, int*);
+void mostrarTablaDeEstadisticas(struct un_jugador *, const int, int, int *);
 
 void mostrarEquipos(struct un_equipo*, int);
 

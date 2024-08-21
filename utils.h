@@ -9,6 +9,7 @@
 #define FMAG 35
 #define FCYA 36
 #define FWHT 37
+#define FORG 38
 
 #define BBLK 40
 #define BRED 41
@@ -23,6 +24,7 @@ void setupTerminal();
 void clearScreen();
 
 void setColor(int , int);
+void setColorRGB(int, int, int);
 void resetColor();
 void moveTo(int, int);
 

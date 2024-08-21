@@ -7,7 +7,7 @@
 #include "files.h"
 #include "jugador.h"
 
-void elegirJugadores(struct un_jugador***, struct un_jugador*, const int, int*);
+void elegirJugadores(struct un_jugador***, struct un_jugador*, const int, int, int*);
 void elegirEquiposManualmente(struct un_equipo*, struct un_equipo*, int,  struct un_jugador**);
 
 int main(void)
@@ -22,6 +22,7 @@ int main(void)
     int input = 0;
     int tam_equipo = 0;
     int pos_y;
+    int padding_x = 4;
 
     setupTerminal();
     inicioDeSistema(&input);
@@ -34,8 +35,57 @@ int main(void)
         cargarListaDeJugadores(archivo_jugadores, jugadores);
         ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
         fclose(archivo_jugadores);
+        _sleep(500);
+        clearScreen();
 
-        if(input == 3)
+        if(input == 1 || input == 2)
+        {
+            
+            mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, &pos_y);
+
+            moveTo(padding_x, pos_y);
+            printf("Ingrese el tamaño de los equipos: ");
+            scanf("%d", &tam_equipo);
+            moveTo(padding_x, pos_y);
+            printf("                                      ");
+
+            jugadores_disponibles = malloc(tam_equipo * 2 * sizeof(struct un_jugador *));
+
+            elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2, padding_x, &pos_y);
+
+            equipo1.num = 0;
+            equipo1.probabilidadGanar = 0;
+            equipo1.promedio = 0;
+            equipo1.varianza = 0;
+
+            equipo2.num = 0;
+            equipo2.probabilidadGanar = 0;
+            equipo2.promedio = 0;
+            equipo2.varianza = 0;
+
+            equipo1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
+            equipo2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
+
+
+            if (input == 1)
+            {
+                generarEquiposBalanceadamente(jugadores_disponibles, &equipo1, &equipo2, tam_equipo * 2);
+            }
+            else if (input == 2)
+            {
+                elegirEquiposManualmente(&equipo1, &equipo2, tam_equipo, jugadores_disponibles);
+                calcularProbabilidadDeGanar(&equipo1, &equipo2, tam_equipo);
+            }
+            struct un_equipo equipos[2] = {equipo1, equipo2};
+
+            //float probabilidadDeGanar = 
+            mostrarEquipos(equipos, tam_equipo);
+            free(jugadores);
+            free(jugadores_disponibles);
+            free(equipo1.jugadores);
+            free(equipo2.jugadores);
+        }
+        else if(input == 3)
         {
             ingresarNuevosJugadores(archivo_jugadores, dir_archivo, &cantidad_jugadores);
 
@@ -43,72 +93,38 @@ int main(void)
             jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
 
             archivo_jugadores = fopen(dir_archivo, "rt");
-            cargarListaDeJugadores(archivo_jugadores, jugadores);
-            ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
+            // cargarListaDeJugadores(archivo_jugadores, jugadores);
+            // ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
             fclose(archivo_jugadores);
+            _sleep(500);
+            clearScreen();
         }
-
-        _sleep(1000);
-        clearScreen();
-
-        mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, &pos_y);
-
-        moveTo(3, pos_y);
-        printf("Ingrese el tamaño de los equipos: ");
-        scanf("%d", &tam_equipo);
-        moveTo(3, pos_y);
-        printf("                                      ");
-
-        jugadores_disponibles = malloc(tam_equipo * 2 * sizeof(struct un_jugador *));
-
-        elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2, &pos_y);
-
-        equipo1.num = 0;
-        equipo1.probabilidadGanar = 0;
-        equipo1.promedio = 0;
-        equipo1.varianza = 0;
-
-        equipo2.num = 0;
-        equipo2.probabilidadGanar = 0;
-        equipo2.promedio = 0;
-        equipo2.varianza = 0;
-
-        equipo1.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
-        equipo2.jugadores = malloc(tam_equipo * sizeof(struct un_jugador*));
-
-
-        if (input == 1)
+        else if(input == 4)
         {
-            generarEquiposBalanceadamente(jugadores_disponibles, &equipo1, &equipo2, tam_equipo * 2);
+            archivo_jugadores = fopen(dir_archivo, "rt+");
+            clearScreen();
+            modificarArchivoJugadores(archivo_jugadores, jugadores, cantidad_jugadores, padding_x, &pos_y);
+            fclose(archivo_jugadores);
+            _sleep(500);
+            _getch();
         }
-        else if (input == 2)
-        {
-            elegirEquiposManualmente(&equipo1, &equipo2, tam_equipo, jugadores_disponibles);
-            calcularProbabilidadDeGanar(&equipo1, &equipo2, tam_equipo);
-        }
-        struct un_equipo equipos[2] = {equipo1, equipo2};
 
-        //float probabilidadDeGanar = 
-        mostrarEquipos(equipos, tam_equipo);
-        moveTo(3, pos_y);
-
-        free(jugadores);
-        free(jugadores_disponibles);
-        free(equipo1.jugadores);
-        free(equipo2.jugadores);
-        _sleep(1500);
+        moveTo(padding_x + 1, pos_y);
+        _sleep(500 * 2);
+        printf("Volver al menú...");
         _getch();
+
         inicioDeSistema(&input);
     }
     clearScreen();
     return 0;
 }
-void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores, int* pos_y)
+void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores, int padding_x, int* pos_y)
 {
     int indice_jugador = 0;
     int contador = 0;
 
-    moveTo(3, *pos_y);
+    moveTo(padding_x, *pos_y);
     printf("Elija ");
     setColor(FGRN, BBLK);
     printf("%d", cant_jugadores - contador);
@@ -119,12 +135,12 @@ void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugad
     {
         (*jugadores_disponibles)[contador] = &jugadores[indice_jugador];
         jugadorFueElegido(indice_jugador);
-        moveTo(3, *pos_y);
+        moveTo(padding_x, *pos_y);
         printf("                        ");
         contador++;
         if (contador < cant_jugadores)
         {
-            moveTo(3, *pos_y);
+            moveTo(padding_x, *pos_y);
             printf("Elija ");
             setColor(FGRN, BBLK);
             printf("%d", cant_jugadores - contador);
