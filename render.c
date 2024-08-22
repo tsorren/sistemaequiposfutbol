@@ -6,8 +6,6 @@
 #include "utils.h"
 #include "jugador.h"
 
-void colorSegunFloat(int*, int*, int*, float);
-
 void inicioDeSistema(int *input)
 {
     clearScreen();
@@ -74,8 +72,8 @@ void mostrarPlantillaCarga(int p_X, int y)
 
 void jugadorFueElegido(int id)
 {
-    const int paddingX = 5;
-    const int paddingY = 11;
+    const int paddingX = 7;
+    const int paddingY = 10;
     int x = floor(id % 5) * 23 + paddingX;
     int y = (id / 5) * 4 + paddingY;
     moveTo(x + 8, y);
@@ -84,32 +82,32 @@ void jugadorFueElegido(int id)
     setColor(FWHT, BBLK);
 }
 
-void mostrarJugador(struct un_jugador jugador)
+void mostrarJugador(struct un_jugador jugador, int *pos_y)
 {
-    const int padding_x = 5;
-    const int padding_y = 11;
+    const int padding_x = 6;
     int x = padding_x + (jugador.id % 5) * 23 ;
-    int y = padding_y + floor(jugador.id / 5) * 4;
+    int y = *pos_y + floor(jugador.id / 5) * 4;
     moveTo(x, y);
     printf("ID: %d", jugador.id);
     moveTo(x, ++y);
-    printf("    Nombre: %s", jugador.nombre);
+    printf("Nombre:  %s", jugador.nombre);
 
     moveTo(x, ++y);
-    printf("    PUNTAJE: ");
+    printf("PUNTAJE: ");
     int r, g, b;
     colorSegunFloat(&r, &g, &b, jugador.puntaje_general);
     setColorRGB(r, g, b);
-    printf("% .2f", jugador.puntaje_general);
+    printf("%.2f", jugador.puntaje_general);
     setColor(FWHT, BBLK);
 }
 
-void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo, int* pos_y)
+void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo, int *pos_y)
 {
     const int padding_y = 2;
+    int last_y;
     *pos_y = padding_y;
     moveTo(3, *pos_y);
-    printf(" -------------------------------------------------------------------------------------------------------------------");
+    printf("+-------------------------------------------------------------------------------------------------------------------+");
     moveTo(28, ++(*pos_y));
     printf("          _ _   _  ____    _    ____   ___  ____  _____ ____       ");
     moveTo(28, ++(*pos_y));
@@ -120,32 +118,49 @@ void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_ju
     printf("     | |_| | |_| | |_| |/ ___ \\| |_| | |_| |  _ <| |___ ___) |     ");
     moveTo(28, ++(*pos_y));
     printf("      \\___/ \\___/ \\____/_/   \\_\\____/ \\___/|_| \\_\\_____|____/      ");
-    moveTo(28, ++(*pos_y));
-    printf("                                                                   ");
+    //moveTo(28, ++(*pos_y));
+    //printf("                                                                   ");
     moveTo(3, ++(*pos_y));
-    printf(" -------------------------------------------------------------------------------------------------------------------");
+    printf("+-------------------------------------------------------------------------------------------------------------------+");
 
     (*pos_y) = padding_y + 1;
-    int j = 0;
-    while (j < (ceil(cantidad_jugadores / 5)) * 4 + 7 + 1)
-    {
-        moveTo(3, (*pos_y) + j);
-        printf("|");
-        moveTo(119, (*pos_y) + j);
-        printf("|");
-        j++;
-    }
 
-    (*pos_y) += j;
+    for(int j = 0; j < 5; j++)
+    {
+        moveTo(3, *pos_y);
+        printf("|");
+        moveTo(119, *pos_y);
+        printf("|");
+        (*pos_y)++;
+    }
     moveTo(3, *pos_y);
-    printf(" -------------------------------------------------------------------------------------------------------------------");
+    printf("+");
+    moveTo(119, *pos_y);
+    printf("+");
+    (*pos_y)++;
+
+    for (int j = 0; j < (ceil(cantidad_jugadores / 5.0)) * 4 + 1; j++)
+    {
+        moveTo(3, *pos_y);
+        printf("|");
+        moveTo(119, *pos_y);
+        printf("|");
+        (*pos_y)++;
+    }
+    
+
+    moveTo(3, *pos_y);
+    printf("+-------------------------------------------------------------------------------------------------------------------+");
+
+    last_y = *pos_y + 2;
+    (*pos_y) = padding_y + 8;
 
     for (int i = 0; i < cantidad_jugadores; i++)
     {
         jugadores[i].id = i;
-        mostrarJugador(jugadores[i]);
+        mostrarJugador(jugadores[i], pos_y);
     }
-    (*pos_y) += 2;
+    (*pos_y) = last_y;
 }
 
 void mostrarEquipos(struct un_equipo *equipos, int tam)
@@ -246,29 +261,33 @@ void mostrarSeparadoresDeColEstadisticas(const int x, const int y)
 void colorSegunFloat(int *r, int *g, int *b, float valor)
 {
     int cant_colores = 16;
-    float rango_transicion = 7.0; // Transición de rojo a amarillo
-    float rango_final = 9.0; // Transición de amarillo a verde (8 a 10)
+    float rango_inicial = 1.5; // Transición de rojo a amarillo
+    float rango_transicion = 6.0; // Transición de rojo a amarillo
+    float rango_final = 7.5; // Transición de amarillo a verde (8 a 10)
 
-    if (valor <= 7) 
+    if(valor < rango_inicial)
+    {        
+        *r = 255;
+        *g = 0;
+    }
+    else if (valor <= rango_transicion) 
     {
         // Transición de rojo a amarillo
         *r = 255;
-        *g = (int)(255 * fmax(0, (valor - 1)) / rango_transicion);
-        *b = 0;
+        *g = (int)(255 * fmax(0, (valor - rango_inicial)) / rango_transicion);
     } 
     else if (valor <= rango_final) 
     {
         // Transición de amarillo a verde
-        *r = (int)(255 * (10 - valor) / (10 - 8));
+        *r = (int)(255 * (10 - valor) / (10 - rango_transicion));
         *g = 255;
-        *b = 0;
     } 
     else {
         // Verde
         *r = 0;
         *g = 255;
-        *b = 0;
     }
+    *b = 0;
 }
 /*
 

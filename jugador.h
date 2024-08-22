@@ -31,7 +31,7 @@ struct un_equipo
 
 struct FILE;
 
-float calcularPuntaje(struct un_jugador*);
+float calcularPuntaje(struct un_jugador);
 void generarArrayEstadisticasDeJugador(struct un_jugador, float*);
 void calcularProbabilidadDeGanar(struct un_equipo*, struct un_equipo*, int);
 float calcularAtaqueDeEquipo(struct un_equipo eq, int tam);

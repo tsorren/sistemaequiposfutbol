@@ -12,8 +12,7 @@ void elegirEquiposManualmente(struct un_equipo*, struct un_equipo*, int,  struct
 
 int main(void)
 {
-    const char dir_archivo[] = "jugadores.csv";
-    FILE *archivo_jugadores;
+    const char dir_archivo[] = "jugadores.dat";
     int cantidad_jugadores;
     struct un_jugador *jugadores;
     struct un_jugador **jugadores_disponibles;
@@ -29,17 +28,20 @@ int main(void)
     while(input != 99)
     {
         pos_y = 0;
-        archivo_jugadores = fopen(dir_archivo, "rt");
-        cantidad_jugadores = calcularCantidadDeJugadores(archivo_jugadores);
+        cantidad_jugadores = calcularCantidadDeJugadores(dir_archivo);
         jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
-        cargarListaDeJugadores(archivo_jugadores, jugadores);
-        ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
-        fclose(archivo_jugadores);
+        if(cantidad_jugadores > 0)
+        {
+            cargarListaDeJugadores(dir_archivo, jugadores);
+            ordenarArchivoJugadores(dir_archivo, &jugadores, cantidad_jugadores);
+        }
         _sleep(500);
         clearScreen();
 
         if(input == 1 || input == 2)
         {
+            // moveTo(padding_x + 2, 3);
+            // printf("Cant: %d", cantidad_jugadores);
             
             mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, &pos_y);
 
@@ -87,26 +89,20 @@ int main(void)
         }
         else if(input == 3)
         {
-            ingresarNuevosJugadores(archivo_jugadores, dir_archivo, &cantidad_jugadores);
+            ingresarNuevosJugadores(dir_archivo, &cantidad_jugadores, &pos_y);
 
             free(jugadores);
             jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
 
-            archivo_jugadores = fopen(dir_archivo, "rt");
+            // archivo_jugadores = fopen(dir_archivo, "rt");
             // cargarListaDeJugadores(archivo_jugadores, jugadores);
             // ordenarListaDeJugadores(&jugadores, cantidad_jugadores);
-            fclose(archivo_jugadores);
-            _sleep(500);
-            clearScreen();
+            // fclose(archivo_jugadores);
         }
         else if(input == 4)
         {
-            archivo_jugadores = fopen(dir_archivo, "rt+");
             clearScreen();
-            modificarArchivoJugadores(archivo_jugadores, jugadores, cantidad_jugadores, padding_x, &pos_y);
-            fclose(archivo_jugadores);
-            _sleep(500);
-            _getch();
+            modificarArchivoJugadores(dir_archivo, jugadores, cantidad_jugadores, padding_x, &pos_y);
         }
 
         moveTo(padding_x + 1, pos_y);

@@ -6,185 +6,135 @@
 #include "render.h"
 #include "utils.h"
 
-void moverPunteroA(FILE*, int);
-int calcularCantidadDeJugadores(FILE*);
-void ingresarNuevosJugadores(FILE *, char*, int*);
-void cargarNuevoJugadorEnArchivo(FILE *, int, struct un_jugador);
-int siguienteComa(char*, int);
-float conseguirSiguienteFloat(char*, int*, int*);
-void cargarListaDeJugadores(FILE*, struct un_jugador*);
 
 void moverPunteroA(FILE *archivo, int linea)
 {
-    const int MAX_LENGTH = 150;
-    char buffer[MAX_LENGTH];
-
-    fseek(archivo, 0, SEEK_SET);
-    for (int i = 0; i < linea; i++)
-    {
-        fgets(buffer, MAX_LENGTH, archivo);
-        fseek(archivo, 0, SEEK_CUR);
-    }
+    fseek(archivo, linea * sizeof(struct un_jugador), SEEK_SET);
 }
 
-int calcularCantidadDeJugadores(FILE *archivo)
+int calcularCantidadDeJugadores(char *dir_archivo)
 {
-    const int MAX_LENGTH = 150;
-    char buffer[MAX_LENGTH];
+    FILE *archivo = fopen(dir_archivo, "rb+");
+    struct un_jugador aux;
     int cantidad = 0;
 
-    moverPunteroA(archivo, 1);
-
-    while (fgets(buffer, MAX_LENGTH, archivo))
+    while (fread(&aux, sizeof(struct un_jugador), 1, archivo))
     {
         cantidad++;
     }
     // moveTo(3, 1);
     // printf("Cantidad de jugadores disponibles: %d", cantidad);
 
+    fclose(archivo);
     return cantidad;
 }
 
-void ingresarNuevosJugadores(FILE *arch, char *dir_archivo, int *cant_j)
+void ingresarNuevosJugadores(char *dir_archivo, int *cant_j, int *pos_y)
 {
-    arch = fopen(dir_archivo, "rt+");
+    FILE* archivo = fopen(dir_archivo, "rt+");
     int p_X = 8;
     int x;
-    int y;
 
     struct un_jugador jugador;
     int continuar = 1;
     while(continuar != 0)
     {
         x = p_X;
-        y = 3;
+        *pos_y = 3;
         jugador.id = *cant_j;
-        mostrarPlantillaCarga(x, y);
+        mostrarPlantillaCarga(x, *pos_y);
 
         x = p_X + 22;
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%s", jugador.nombre);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.resistencia);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.velocidad);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.control);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.defensa);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.ataque);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.gambeta);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.cuerpo);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.porteria);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.vision);
-        moveTo(x, ++y);
+        moveTo(x, ++(*pos_y));
         scanf("%f", &jugador.juego_equipo);
-        jugador.puntaje_general = calcularPuntaje(&jugador);
+        jugador.puntaje_general = calcularPuntaje(jugador);
 
-        moveTo(p_X + 3, ++y);
+        moveTo(p_X + 3, ++(*pos_y));
         printf("Puntaje: ");
-        moveTo(x, y);
+        moveTo(x, *pos_y);
         printf("%.2f", jugador.puntaje_general);
 
-        cargarNuevoJugadorEnArchivo(arch, *cant_j, jugador);
+        cargarNuevoJugadorEnArchivo(archivo, jugador, *cant_j);
 
         (*cant_j)++;
 
-        y += 2;
-        moveTo(p_X, y);
+        (*pos_y) += 2;
+        moveTo(p_X, *pos_y);
         printf("Continuar carga? (0/1): ");
         scanf("%d", &continuar);
     }
-    fclose(arch);
+    (*pos_y) += 2;
+    fclose(archivo);
 }
 
-void cargarNuevoJugadorEnArchivo(FILE *arch, int cant_j, struct un_jugador j)
+void cargarNuevoJugadorEnArchivo(FILE *archivo, struct un_jugador j, int cant_j)
 {
-    moverPunteroA(arch, cant_j + 1);
+    moverPunteroA(archivo, cant_j);
+
+    fwrite(&j, sizeof(struct un_jugador), 1, archivo);
+    fflush(archivo);
+}
+
+void ordenarArchivoJugadores(char *dir_archivo, struct un_jugador** jugadores, int cantidad_jugadores)
+{
+
+    ordenarListaDeJugadores(jugadores, cantidad_jugadores);
     
-    fflush(arch);
+    FILE *archivo = fopen(dir_archivo, "rb+");
 
-    fprintf(arch, "%s,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f,%05.2f\n",
-        j.nombre, j.resistencia, j.velocidad, j.control, j.defensa, j.ataque, j.gambeta, j.cuerpo, j.porteria, j.vision, j.juego_equipo, j.puntaje_general);
-
-    fflush(arch);}
-
-int siguienteComa(char *buffer, int inicio)
-{
-    while (buffer[inicio] != ',')
+    for (int i = 0; i < cantidad_jugadores; i++)
     {
-        inicio++;
+        cargarNuevoJugadorEnArchivo(archivo, (*jugadores)[i], i);
     }
-
-    return inicio;
+    fclose(archivo);
 }
 
-float conseguirSiguienteFloat(char *buffer, int *inicio, int *fin)
+void cargarListaDeJugadores(char *dir_archivo, struct un_jugador *jugadores)
 {
-    const int MAX_LENGTH = 150;
-    char word[MAX_LENGTH];
-
-    *fin = siguienteComa(buffer, *inicio);
-    strncpy(word, &buffer[*inicio], *fin - *inicio);
-    word[*fin] = '\0';
-    *inicio = *fin + 1;
-    float aux = atof(word);
-    return aux;
-}
-
-void cargarListaDeJugadores(FILE *archivo, struct un_jugador *jugadores)
-{
-    moverPunteroA(archivo, 1);
-    struct un_jugador jugador;
+    FILE* archivo = fopen(dir_archivo, "rb");
 
     int contador = 0;
-    const int MAX_LENGTH = 150;
-    char buffer[MAX_LENGTH];
-    int inicio = 0;
-    int fin;
-    int len;
+    const int size = sizeof(struct un_jugador);
 
-    while (fgets(buffer, MAX_LENGTH, archivo))
+    while (fread(&jugadores[contador], size, 1, archivo))
     {
-        inicio = 0;
-        fin = siguienteComa(buffer, inicio);
-        len = fin - inicio;
-        strncpy(jugador.nombre, &buffer[inicio], len);
-        jugador.nombre[fin] = '\0';
-        inicio = fin + 1;
-
-        jugador.id = contador;
-        jugador.resistencia = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.velocidad = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.control = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.defensa = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.ataque = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.gambeta = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.cuerpo = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.porteria = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.vision = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.juego_equipo = conseguirSiguienteFloat(buffer, &inicio, &fin);
-        jugador.puntaje_general = calcularPuntaje(&jugador);
-
-        jugadores[contador] = jugador;
+        jugadores[contador].puntaje_general = calcularPuntaje(jugadores[contador]);
         contador++;
     }
+    fclose(archivo);
 }
 
-void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int cantidad_jugadores, int padding_x, int *pos_y)
+void modificarArchivoJugadores(char *dir_archivo, struct un_jugador *jugadores, int cantidad_jugadores, int padding_x, int *pos_y)
 {
+    FILE *archivo = fopen(dir_archivo, "rb+");
     int grabar = 1;
     int continuar = 1;
     int continuar_campos = 1;
 
     char campo[2] = "";
-    float val;
     int id;
+    float *campo_reemplazar;
+    char *nombre_reemplazar = NULL;
 
     while(continuar != 0)
     {
@@ -197,16 +147,18 @@ void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int 
 
         continuar_campos = 1;
         grabar = 1;
-        float *campo_reemplazar;
+
         while(continuar_campos != 0)
         {
+            nombre_reemplazar = NULL;
             moveTo(padding_x + 1, *pos_y);
-            printf("Ingresar campo (R / V / C / D / A / G / CU / P / V / JE): ");
+            printf("Ingresar campo (N / R / V / C / D / A / G / CU / P / VJ / JE): ");
             scanf("%s", campo);
             moveTo(padding_x + 1, *pos_y);
             printf("                                                                ");
             
-            if(!strcmp(campo, "r") || !strcmp(campo, "R")) campo_reemplazar = &jugadores[id].resistencia;            
+            if     (!strcmp(campo, "n") || !strcmp(campo, "N")) nombre_reemplazar = jugadores[id].nombre;    
+            else if(!strcmp(campo, "r") || !strcmp(campo, "R")) campo_reemplazar = &jugadores[id].resistencia;            
             else if(!strcmp(campo, "v") || !strcmp(campo, "V")) campo_reemplazar = &jugadores[id].velocidad;            
             else if(!strcmp(campo, "c") || !strcmp(campo, "C")) campo_reemplazar = &jugadores[id].control;            
             else if(!strcmp(campo, "d") || !strcmp(campo, "D")) campo_reemplazar = &jugadores[id].defensa;            
@@ -214,18 +166,25 @@ void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int 
             else if(!strcmp(campo, "g") || !strcmp(campo, "G")) campo_reemplazar = &jugadores[id].gambeta;            
             else if(!strcmp(campo, "cu") || !strcmp(campo, "CU")) campo_reemplazar = &jugadores[id].cuerpo;            
             else if(!strcmp(campo, "p") || !strcmp(campo, "P")) campo_reemplazar = &jugadores[id].porteria;            
-            else if(!strcmp(campo, "v") || !strcmp(campo, "V")) campo_reemplazar = &jugadores[id].vision;            
+            else if(!strcmp(campo, "vj") || !strcmp(campo, "VJ")) campo_reemplazar = &jugadores[id].vision;            
             else if(!strcmp(campo, "je") || !strcmp(campo, "JE")) campo_reemplazar = &jugadores[id].juego_equipo;
             
             moveTo(padding_x + 1, *pos_y);
-            printf("Reemplazar %.2f por: ", *campo_reemplazar);
-            scanf("%f", &val);
+
+            if(nombre_reemplazar != NULL)
+            {
+                printf("Reemplazar %s por: ", nombre_reemplazar);
+                scanf("%s", nombre_reemplazar);
+            }
+            else
+            {
+                printf("Reemplazar %.2f por: ", *campo_reemplazar);
+                scanf("%f", campo_reemplazar);
+            }
             moveTo(padding_x + 1, *pos_y);
             printf("                                                                ");
 
-            *campo_reemplazar = val;
-
-            jugadores[id].puntaje_general = calcularPuntaje(&jugadores[id]);
+            jugadores[id].puntaje_general = calcularPuntaje(jugadores[id]);
 
             moveTo(padding_x + 1, *pos_y);
             printf("Continuar modificando campos? (0 / 1): ");
@@ -242,7 +201,8 @@ void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int 
 
         if(grabar == 1)
         {
-            cargarNuevoJugadorEnArchivo(archivo, id, jugadores[id]);
+            cargarNuevoJugadorEnArchivo(archivo, jugadores[id], id);
+            ordenarArchivoJugadores(dir_archivo, &jugadores, cantidad_jugadores);
         }
 
         moveTo(padding_x + 1, *pos_y);
@@ -251,4 +211,5 @@ void modificarArchivoJugadores(FILE *archivo, struct un_jugador *jugadores, int 
         moveTo(padding_x + 1, *pos_y);
         printf("                                                                ");
     }
+    fclose(archivo);
 }

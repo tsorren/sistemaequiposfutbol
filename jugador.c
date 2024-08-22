@@ -4,44 +4,44 @@
 
 #include "jugador.h"
 // Función para calcular el puntaje
-float calcularPuntaje(struct un_jugador *jugador)
+float calcularPuntaje(struct un_jugador jugador)
 {
-    float w_R  = 0.1034;  // Resistencia
-    float w_V  = 0.06897; // Velocidad
-    float w_C  = 0.1379;  // Control del balón
-    float w_D  = 0.1034;  // Defensa
-    float w_AT = 0.1379;  // Ataque
-    float w_G  = 0.06897; // Gambeta
-    float w_CU = 0.06897; // Cuerpo
-    float w_P  = 0.06897; // Porteria
-    float w_VJ = 0.1379;  // Visión de juego
-    float w_JE = 0.1034;  // Juego en equipo
-
+    float w_R = 0.75; // Resistencia
+    float w_V = 0.5;  // Velocidad
+    float w_C = 1.0;  // Control del balón
+    float w_D = 0.75; // Defensa
+    float w_A = 1.0; // Ataque
+    float w_G = 0.5;  // Gambeta
+    float w_CU = 0.5; // Cuerpo
+    float w_P = 0.5;   // Porteria
+    float w_VJ = 1.0;  // Visión de juego
+    float w_JE = 0.75; // Juego en equipo
     //  Suma de los pesos
     float suma_pesos = 0;
     suma_pesos += w_R;
     suma_pesos += w_V;
     suma_pesos += w_C;
     suma_pesos += w_D;
-    suma_pesos += w_AT;
+    suma_pesos += w_A;
     suma_pesos += w_G;
     suma_pesos += w_CU;
+    suma_pesos += w_P;
     suma_pesos += w_VJ;
     suma_pesos += w_JE;
 
     // Cálculo del puntaje ponderado
     float puntaje = 0;
-    puntaje += w_R * jugador->resistencia;
-    puntaje += w_V * jugador->velocidad;
-    puntaje += w_C * jugador->control;
-    puntaje += w_D * jugador->defensa;
-    puntaje += w_AT * jugador->ataque;
-    puntaje += w_G * jugador->gambeta;
-    puntaje += w_CU * jugador->cuerpo;
-    puntaje += w_P * jugador->porteria;
-    puntaje += w_VJ * jugador->vision;
-    puntaje += w_JE * jugador->juego_equipo;
-    // puntaje /= suma_pesos;
+    puntaje += w_R * jugador.resistencia;
+    puntaje += w_V * jugador.velocidad;
+    puntaje += w_C * jugador.control;
+    puntaje += w_D * jugador.defensa;
+    puntaje += w_A * jugador.ataque;
+    puntaje += w_G * jugador.gambeta;
+    puntaje += w_CU * jugador.cuerpo;
+    puntaje += w_P * jugador.porteria;
+    puntaje += w_VJ * jugador.vision;
+    puntaje += w_JE * jugador.juego_equipo;
+    puntaje /= suma_pesos;
 
     return puntaje;
 }
@@ -102,6 +102,10 @@ void ordenarListaDeJugadores(struct un_jugador **jugadores, const int tam)
                 (*jugadores)[j] = aux;
             }
         }
+    }
+    for (int i = 0; i < tam; i++)
+    {
+        (*jugadores)[i].id = i;
     }
 }
 

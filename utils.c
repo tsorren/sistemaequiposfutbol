@@ -79,24 +79,3 @@ void moveTo(int x, int y) {
     // Positions are 1-indexed (top-left corner is (1, 1))
     printf("\033[%d;%dH", y, x);
 }
-/*
-int main(void)
-{
-    enableANSI();
-    clearScreen();
-    moveTo(3, 2);     // Move cursor to position (5, 3)
-    printf("Hello, ANSI TUI!");
-    moveTo(20, 2);     // Move cursor to position (5, 3)
-    printf("Hello, ANSI TUI!");
-
-    setColor(32, 40); // Green text, Black background
-    moveTo(3, 6);    // Move cursor to position (10, 6)
-    printf("Press any key to exit...");
-
-    resetColor();     // Reset colors to default
-
-    getchar();        // Wait for a key press
-    clearScreen();    // Clear the screen before exiting
-    return 0;
-}
-*/

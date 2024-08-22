@@ -4,11 +4,13 @@
 struct un_jugador;
 struct un_equipo;
 
+void colorSegunFloat(int*, int*, int*, float);
+
 void inicioDeSistema(int*);
 void mostrarPlantillaCarga(int, int);
 void jugadorFueElegido(int);
 
-void mostrarJugador(struct un_jugador);
+void mostrarJugador(struct un_jugador, int*);
 void mostrarListadoJugadores(struct un_jugador*, const int, const int, int*);
 void mostrarTablaDeEstadisticas(struct un_jugador *, const int, int, int *);
 
