@@ -32,6 +32,7 @@ int main(void)
     showCursor();
     while(input != 0)
     {
+        clearScreen();
         pos_y = padding_y;
         cantidad_jugadores = calcularCantidadDeJugadores(dir_archivo);
         jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
@@ -125,7 +126,7 @@ void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugad
     int indice_jugador = 0;
     int contador = 0;
 
-    moveTo(padding_x, *pos_y);
+    moveTo(padding_x + 1, *pos_y);
     printf("Elija ");
     setColor(FGRN, BBLK);
     printf("%d", cant_jugadores - contador);
@@ -135,7 +136,7 @@ void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugad
     while (contador < cant_jugadores && indice_jugador > -1)
     {
         (*jugadores_disponibles)[contador] = &jugadores[indice_jugador];
-        jugadorFueElegido(indice_jugador, padding_x + 4, padding_y + 8);
+        jugadorFueElegido(indice_jugador, padding_x + 4, padding_y + 9);
         moveTo(padding_x, *pos_y);
         printf("                        ");
         contador++;
