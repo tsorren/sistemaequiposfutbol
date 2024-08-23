@@ -46,10 +46,63 @@ void setFontSize(int fontSize)
     }
 }
 
+void hideCursor() {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+
+    GetConsoleCursorInfo(consoleHandle, &cursorInfo);  // Obtén la información actual del cursor
+    cursorInfo.bVisible = FALSE;                      // Establece la visibilidad del cursor a FALSE
+    SetConsoleCursorInfo(consoleHandle, &cursorInfo); // Aplica los cambios
+}
+
+void showCursor() {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+
+    GetConsoleCursorInfo(consoleHandle, &cursorInfo);  // Obtén la información actual del cursor
+    cursorInfo.bVisible = TRUE;                      // Establece la visibilidad del cursor a TRUE
+    SetConsoleCursorInfo(consoleHandle, &cursorInfo); // Aplica los cambios
+}
+
+void setScreenSize(int width, int height)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE) {
+        printf("Error: Unable to get handle to console.\n");
+        return;
+    }
+
+    // Definir el tamaño de la ventana de la consola
+    SMALL_RECT windowSize = {0, 0, width - 1, height - 1};
+    if (!SetConsoleWindowInfo(hConsole, TRUE, &windowSize)) {
+        printf("Error: Unable to set window size.\n");
+        return;
+    }
+
+    // Definir el tamaño del buffer de pantalla
+    COORD bufferSize = {width, height};
+    if (!SetConsoleScreenBufferSize(hConsole, bufferSize)) {
+        printf("Error: Unable to set screen buffer size.\n");
+        return;
+    }
+
+    // Verificar el tamaño actual del buffer y ventana
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        printf("Current buffer size: %d x %d\n", csbi.dwSize.X, csbi.dwSize.Y);
+        printf("Current window size: %d x %d\n", csbi.srWindow.Right - csbi.srWindow.Left + 1, csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+    } else {
+        printf("Error: Unable to get console screen buffer info.\n");
+    }
+}
+
 void setupTerminal()
 {
     enableANSI();
-    setFontSize(20);
+    setFontSize(21);
+    //setScreenSize(180, 46);
+    setScreenSize(180, 60);
+    hideCursor();
 }
 
 void clearScreen() {

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 #include <math.h>
 
 #include "render.h"
@@ -9,83 +10,108 @@
 void inicioDeSistema(int *input)
 {
     clearScreen();
-    printf("\n");
-    printf("                    S I S T E M A\n");
-    printf("                         D E\n");
-    printf("         G E S T I Ó N   D E   E Q U I P O S\n\n");
-    printf("         Opciones:\n");
-    printf("            1:  Generar equipos balanceadamente\n");
-    printf("            2:  Evaluar balance de equipos\n");
-    printf("            3:  Añadir nuevo jugador\n");
-    printf("            4:  Modificar jugadores existentes\n");
-    printf("            99: Salir\n");
 
-    setColor(FGRN, BBLK);
-    printf("\n         Elija una opción: ");
-    setColor(FWHT, BBLK);
-    scanf("%d", input);
+    printf("\n\n");
+    
+    printf("                                                      +-------------------------------------------------------------+\n");
+    printf("                                                      |   ____ ___ ____ _____ _____ __  __    _       ____  _____   |\n");
+    printf("                                                      |  / ___|_ _/ ___|_   _| ____|  \\/  |  / \\     |  _ \\| ____|  |\n");
+    printf("                                                      |  \\___ \\| |\\___ \\ | | |  _| | |\\/| | / _ \\    | | | |  _|    |\n");
+    printf("                                                      |   ___) | | ___) || | | |___| |  | |/ ___ \\   | |_| | |___   |\n");
+    printf("                                                      |  |____/___|____/ |_| |_____|_|  |_/_/   \\_\\  |____/|_____|  |\n");
+    printf("                                                      |     ____ _____ ____ _____ ___ ___  _   _    ____  _____     |\n");
+    printf("                                                      |    / ___| ____/ ___|_   _|_ _/ _ \\| \\ | |  |  _ \\| ____|    |\n");
+    printf("                                                      |   | |  _|  _| \\___ \\ | |  | | | | |  \\| |  | | | |  _|      |\n");
+    printf("                                                      |   | |_| | |___ ___) || |  | | |_| | |\\  |  | |_| | |___     |\n");
+    printf("                                                      |    \\____|_____|____/ |_| |___\\___/|_| \\_|  |____/|_____|    |\n");
+    printf("                                                      |           _____ ___  _   _ ___ ____   ___  ____             |\n");
+    printf("                                                      |          | ____/ _ \\| | | |_ _|  _ \\ / _ \\/ ___|            |\n");
+    printf("                                                      |          |  _|| | | | | | || || |_) | | | \\___ \\            |\n");
+    printf("                                                      |          | |__| |_| | |_| || ||  __/| |_| |___) |           |\n");
+    printf("                                                      |          |_____\\__\\_\\\\___/|___|_|    \\___/|____/            |\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      +-------------------------------------------------------------+\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      |         ___  ____   ____ ___ ___  _   _ _____ ____          |\n");
+    printf("                                                      |        / _ \\|  _ \\ / ___|_ _/ _ \\| \\ | | ____/ ___|         |\n");
+    printf("                                                      |       | | | | |_) | |    | | | | |  \\| |  _| \\___ \\         |\n");
+    printf("                                                      |       | |_| |  __/| |___ | | |_| | |\\  | |___ ___) |        |\n");
+    printf("                                                      |        \\___/|_|    \\____|___\\___/|_| \\_|_____|____/         |\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |  |   1   |       Generar  Equipos  Balanceadamente       |  |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |  |   2   |         Evaluar  Balance  de  Equipos         |  |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |  |   3   |           Añadir  Nuevos  Jugadores           |  |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |  |   4   |             Modificar  Jugadores              |  |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |  |   0   |                   S A L I R                   |  |\n");
+    printf("                                                      |  +-------+-----------------------------------------------+  |\n");
+    printf("                                                      |                                                             |\n");
+    printf("                                                      +-------------------------------------------------------------+\n");
+
+
+    *input = getch() - 48;
 }
-void mostrarPlantillaCarga(int p_X, int y)
+void mostrarPlantillaCarga(int p_X, int y, int cant_j)
 {
-    for (int i = 0; i < 20; i++)
-    {
-        moveTo(0, i);
-        printf("                                               ");
-    }
-
     moveTo(p_X, y);
-    printf("CARGA DE JUGADOR:");
-        
-    moveTo(p_X + 3, ++y);
-    printf("Nombre: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Resistencia: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Velocidad: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Control: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Defensa: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Ataque: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Gambeta: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Cuerpo: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Porteria: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Vision: ");
-    
-    moveTo(p_X + 5, ++y);
-    printf("Juego en Equipo: ");
+    printf("+---------------------------------+");
+    moveTo(p_X, ++y);
+    printf("| C A R G A N D O   J U G A D O R |");    
+    moveTo(p_X, ++y);
+    printf("+-----------------+---------------+");
+    moveTo(p_X, ++y);
+    printf("| Nombre          |               |");
+    moveTo(p_X, ++y);
+    printf("| Resistencia     |               |");
+    moveTo(p_X, ++y);
+    printf("| Velocidad       |               |");
+    moveTo(p_X, ++y);
+    printf("| Control         |               |");
+    moveTo(p_X, ++y);
+    printf("| Defensa         |               |");
+    moveTo(p_X, ++y);
+    printf("| Ataque          |               |");
+    moveTo(p_X, ++y);
+    printf("| Gambeta         |               |");
+    moveTo(p_X, ++y);
+    printf("| Cuerpo          |               |");
+    moveTo(p_X, ++y);
+    printf("| Porteria        |               |");
+    moveTo(p_X, ++y);
+    printf("| Vision de Juego |               |");
+    moveTo(p_X, ++y);
+    printf("| Juego en Equipo |               |");
+    moveTo(p_X, ++y);
+    printf("+-----------------+---------------+");
+    moveTo(p_X, ++y);
+    printf("| Puntaje         |               |");
+    moveTo(p_X, ++y);
+    printf("+-----------------+---------------+");
+
 }
 
-void jugadorFueElegido(int id)
+void jugadorFueElegido(int id, int padding_x, int padding_y)
 {
-    const int paddingX = 7;
-    const int paddingY = 10;
-    int x = floor(id % 5) * 23 + paddingX;
-    int y = (id / 5) * 4 + paddingY;
+    // const int paddingX = 7;
+    // const int paddingY = 10;
+    int x = floor(id % 5) * 23 + padding_x;
+    int y = (id / 5) * 4 + padding_y;
     moveTo(x + 8, y);
     setColor(FGRN, BBLK);
-    printf("ELEGIDO");
+    printf("X");
     setColor(FWHT, BBLK);
 }
 
-void mostrarJugador(struct un_jugador jugador, int *pos_y)
+void mostrarJugador(struct un_jugador jugador, int x, int *pos_y)
 {
-    const int padding_x = 6;
-    int x = padding_x + (jugador.id % 5) * 23 ;
+    x += 3 + (jugador.id % 5) * 23 ;
     int y = *pos_y + floor(jugador.id / 5) * 4;
     moveTo(x, y);
     printf("ID: %d", jugador.id);
@@ -101,143 +127,206 @@ void mostrarJugador(struct un_jugador jugador, int *pos_y)
     setColor(FWHT, BBLK);
 }
 
-void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo, int *pos_y)
+void mostrarListadoJugadores(struct un_jugador *jugadores, const int cantidad_jugadores, const int tam_equipo, int x, int *pos_y)
 {
-    const int padding_y = 2;
-    int last_y;
-    *pos_y = padding_y;
-    moveTo(3, *pos_y);
+    const int padding_y = *pos_y;
+    int last_y = *pos_y;
+    moveTo(x, *pos_y);
     printf("+-------------------------------------------------------------------------------------------------------------------+");
-    moveTo(28, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
     printf("          _ _   _  ____    _    ____   ___  ____  _____ ____       ");
-    moveTo(28, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
     printf("         | | | | |/ ___|  / \\  |  _ \\ / _ \\|  _ \\| ____/ ___|      ");
-    moveTo(28, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
     printf("      _  | | | | | |  _  / _ \\ | | | | | | | |_) |  _| \\___ \\      ");
-    moveTo(28, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
     printf("     | |_| | |_| | |_| |/ ___ \\| |_| | |_| |  _ <| |___ ___) |     ");
-    moveTo(28, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
     printf("      \\___/ \\___/ \\____/_/   \\_\\____/ \\___/|_| \\_\\_____|____/      ");
-    //moveTo(28, ++(*pos_y));
-    //printf("                                                                   ");
-    moveTo(3, ++(*pos_y));
+    moveTo(x + 25, ++(*pos_y));
+    printf("                                                                   ");
+    moveTo(x, ++(*pos_y));
     printf("+-------------------------------------------------------------------------------------------------------------------+");
 
     (*pos_y) = padding_y + 1;
 
-    for(int j = 0; j < 5; j++)
+    for(int j = 0; j < 6; j++)
     {
-        moveTo(3, *pos_y);
+        moveTo(x, *pos_y);
         printf("|");
-        moveTo(119, *pos_y);
+        moveTo(x + 116, *pos_y);
         printf("|");
         (*pos_y)++;
     }
-    moveTo(3, *pos_y);
-    printf("+");
-    moveTo(119, *pos_y);
-    printf("+");
+
     (*pos_y)++;
 
     for (int j = 0; j < (ceil(cantidad_jugadores / 5.0)) * 4 + 1; j++)
     {
-        moveTo(3, *pos_y);
+        moveTo(x, *pos_y);
         printf("|");
-        moveTo(119, *pos_y);
+        moveTo(x + 116, *pos_y);
         printf("|");
         (*pos_y)++;
     }
     
 
-    moveTo(3, *pos_y);
+    moveTo(x, *pos_y);
     printf("+-------------------------------------------------------------------------------------------------------------------+");
 
     last_y = *pos_y + 2;
-    (*pos_y) = padding_y + 8;
+    (*pos_y) = padding_y + 9;
 
     for (int i = 0; i < cantidad_jugadores; i++)
     {
         jugadores[i].id = i;
-        mostrarJugador(jugadores[i], pos_y);
+        mostrarJugador(jugadores[i], x,  pos_y);
     }
     (*pos_y) = last_y;
 }
 
-void mostrarEquipos(struct un_equipo *equipos, int tam)
+void mostrarSeparadorEquipos(const int x, int *y)
 {
-    int x = 125;
-    int y = 3;
+    moveTo(x, (*y)++);
+    printf("+--------------+-----------+------------+");
+}
+
+void mostrarSeparadorDeColEquipos(const int x, int y)
+{
+    moveTo(x, y);
+    printf("|");
+    moveTo(x + 15, y);
+    printf("|");
+    moveTo(x + 27, y);
+    printf("|");
+    moveTo(x + 40, y);
+    printf("|");
+}
+void mostrarPlantillaEquipos(int x, int y, const int tam_equipos)
+{
+    const int start_x = x, start_y = y;
+    setColor(FWHT, BBLK);
+    mostrarSeparadorEquipos(x, &y);
+    mostrarSeparadorDeColEquipos(start_x, y++);
+    mostrarSeparadorEquipos(start_x, &y);
+
+    moveTo(x + 3, y);
+    printf("Jugadores");
+    for (int i = 0; i < tam_equipos; i++)
+    {
+        mostrarSeparadorDeColEquipos(start_x, y++);
+    }
+    mostrarSeparadorEquipos(start_x, &y);
+
+    mostrarSeparadorDeColEquipos(start_x, y);
+    moveTo(x + 3, y++);
+    printf("Ataque");    
+    mostrarSeparadorDeColEquipos(start_x, y);
+    moveTo(x + 3, y++);
+    printf("Defensa");
+
+    mostrarSeparadorEquipos(start_x, &y);
+
+    mostrarSeparadorDeColEquipos(start_x, y);
+    moveTo(x + 3, y++);
+    printf("Puntaje");
+    mostrarSeparadorDeColEquipos(start_x, y);
+    moveTo(x + 3, y++);
+    printf("Varianza");
+    mostrarSeparadorDeColEquipos(start_x, y);
+    moveTo(x + 3, y++);
+    printf("Prediccion");
+    
+    mostrarSeparadorEquipos(start_x, &y);
+}
+
+void mostrarEquipos(struct un_equipo *equipos, int tam, int padding_x, int padding_y)
+{
+    int x = padding_x + 120;
+    int y = padding_y;
+
+    int r, g, b;
+    float diferencia;
+
+    mostrarPlantillaEquipos(x, y, tam);
+
+    x += 17;
     for (int num = 0; num < 2; num++)
     {
         y = 3;
-        x += 36 * num;
+        x += 13 * num;
         moveTo(x, y);
+        setColor(num == 0 ? FCYA : FYEL, BBLK);
 
-        if (num == 1)
-            setColor(FCYA, BBLK);
-        else
-            setColor(FYEL, BBLK);
-
-        printf("E Q U I P O  %d:", num + 1);
+        printf("EQUIPO %d", num + 1);
         setColor(FWHT, BBLK);
 
-        y++;
+        y += 2;
 
-        moveTo(x, ++y);
-        printf("Jugadores:");
         for (int i = 0; i < tam; i++)
         {
-            moveTo(x + 14, y++);
+            diferencia = equipos[num].jugadores[i]->puntaje_general - equipos[!num].jugadores[i]->puntaje_general;
+            
+            if(fabs(diferencia) > 0.5)
+            {
+                colorSegunFloat(&r, &g, &b, 5 + diferencia);
+                setColorRGB(r, g, b);
+            }
+            moveTo(x, y++);
             printf("%s ", equipos[num].jugadores[i]->nombre);
+            setColor(FWHT, BBLK);
         }
 
-
-        moveTo(x, ++y);
-        printf("ESTADISTICAS:");
-
         float ataque = calcularAtaqueDeEquipo(equipos[num], tam);
+        float defensa = calcularDefensaDeEquipo(equipos[num], tam);
         int r, g, b;
 
         moveTo(x, ++y);
-        printf("Ataque:");
-        moveTo(x + 14, y);
-        colorSegunFloat(&r, &g, &b, ataque);
-        setColorRGB(r, g, b);
+        diferencia = ataque - calcularAtaqueDeEquipo(equipos[!num], tam);
+        if (fabs(diferencia) > 0.5)
+        {
+            colorSegunFloat(&r, &g, &b, 5 + diferencia * 2);
+            setColorRGB(r, g, b);
+        }
         printf("%.2f", ataque);
         setColor(FWHT, BBLK);
 
         moveTo(x, ++y);
-        float defensa = calcularDefensaDeEquipo(equipos[num], tam);
-        printf("Defensa:");
-        moveTo(x + 14, y);
-        colorSegunFloat(&r, &g, &b, defensa);
+        diferencia = defensa - calcularDefensaDeEquipo(equipos[!num], tam);
+        if (fabs(diferencia) > 0.5)
+        {
+            colorSegunFloat(&r, &g, &b, 5 + diferencia * 2);
+            setColorRGB(r, g, b);
+        }
         setColorRGB(r, g, b);
         printf("%.2f", defensa);
         setColor(FWHT, BBLK);
 
         y++;
+
         moveTo(x, ++y);
-        printf("Puntaje:");
-        moveTo(x + 14, y);
-        colorSegunFloat(&r, &g, &b, equipos[num].promedio);
-        setColorRGB(r, g, b);
+        diferencia = equipos[num].promedio - equipos[!num].promedio;
+        if (fabs(diferencia) > 0.75)
+        {
+            colorSegunFloat(&r, &g, &b, 5 + diferencia * 2);
+            setColorRGB(r, g, b);
+        }
         printf("%.2f", equipos[num].promedio);
         setColor(FWHT, BBLK);
 
         moveTo(x, ++y);
-        printf("Varianza:");
-        moveTo(x + 14, y);
-        colorSegunFloat(&r, &g, &b, 10 - equipos[num].varianza * 2);
+        colorSegunFloat(&r, &g, &b, 10 - equipos[num].varianza);
         setColorRGB(r, g, b);
         printf("%.2f", equipos[num].varianza);
         setColor(FWHT, BBLK);
         
         moveTo(x, ++y);
-        //printf("Dispersión: %.2f", dispersion);
-        printf("Predicción:");
-        moveTo(x + 14, y);
-        colorSegunFloat(&r, &g, &b, equipos[num].probabilidadGanar * 10);
-        setColorRGB(r, g, b);
+        diferencia = (equipos[num].probabilidadGanar - equipos[!num].probabilidadGanar) * 100;
+        if (fabs(diferencia) > 10)
+        {
+            colorSegunFloat(&r, &g, &b, 5 + diferencia / 5);
+            setColorRGB(r, g, b);
+        }
         printf("%.2f%%", equipos[num].probabilidadGanar * 100);
         setColor(FWHT, BBLK);
     }
@@ -260,10 +349,10 @@ void mostrarSeparadoresDeColEstadisticas(const int x, const int y)
 
 void colorSegunFloat(int *r, int *g, int *b, float valor)
 {
-    int cant_colores = 16;
-    float rango_inicial = 1.5; // Transición de rojo a amarillo
-    float rango_transicion = 6.0; // Transición de rojo a amarillo
-    float rango_final = 7.5; // Transición de amarillo a verde (8 a 10)
+    int cant_colores = 64;
+    float rango_inicial = 1.0; // Transición de rojo a amarillo
+    float rango_transicion = 6.5; // Transición de rojo a amarillo
+    float rango_final = 10; // Transición de amarillo a verde (8 a 10)
 
     if(valor < rango_inicial)
     {        

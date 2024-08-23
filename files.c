@@ -29,10 +29,10 @@ int calcularCantidadDeJugadores(char *dir_archivo)
     return cantidad;
 }
 
-void ingresarNuevosJugadores(char *dir_archivo, int *cant_j, int *pos_y)
+void ingresarNuevosJugadores(char *dir_archivo, int *cant_j, int padding_x, int *pos_y)
 {
     FILE* archivo = fopen(dir_archivo, "rt+");
-    int p_X = 8;
+    int p_X = padding_x + 2;
     int x;
 
     struct un_jugador jugador;
@@ -40,11 +40,13 @@ void ingresarNuevosJugadores(char *dir_archivo, int *cant_j, int *pos_y)
     while(continuar != 0)
     {
         x = p_X;
-        *pos_y = 3;
+        *pos_y = 2;
         jugador.id = *cant_j;
-        mostrarPlantillaCarga(x, *pos_y);
+        mostrarPlantillaCarga(x, *pos_y, *cant_j);
 
-        x = p_X + 22;
+        *pos_y += 2;
+
+        x = p_X + 20;
         moveTo(x, ++(*pos_y));
         scanf("%s", jugador.nombre);
         moveTo(x, ++(*pos_y));
@@ -69,8 +71,7 @@ void ingresarNuevosJugadores(char *dir_archivo, int *cant_j, int *pos_y)
         scanf("%f", &jugador.juego_equipo);
         jugador.puntaje_general = calcularPuntaje(jugador);
 
-        moveTo(p_X + 3, ++(*pos_y));
-        printf("Puntaje: ");
+        *pos_y += 2;
         moveTo(x, *pos_y);
         printf("%.2f", jugador.puntaje_general);
 
@@ -138,6 +139,7 @@ void modificarArchivoJugadores(char *dir_archivo, struct un_jugador *jugadores, 
 
     while(continuar != 0)
     {
+        clearScreen();
         mostrarTablaDeEstadisticas(jugadores, cantidad_jugadores, padding_x, pos_y);
         moveTo(padding_x + 1, *pos_y);
         printf("Ingresar ID: ");
@@ -155,7 +157,7 @@ void modificarArchivoJugadores(char *dir_archivo, struct un_jugador *jugadores, 
             printf("Ingresar campo (N / R / V / C / D / A / G / CU / P / VJ / JE): ");
             scanf("%s", campo);
             moveTo(padding_x + 1, *pos_y);
-            printf("                                                                ");
+            printf("                                                                                    ");
             
             if     (!strcmp(campo, "n") || !strcmp(campo, "N")) nombre_reemplazar = jugadores[id].nombre;    
             else if(!strcmp(campo, "r") || !strcmp(campo, "R")) campo_reemplazar = &jugadores[id].resistencia;            

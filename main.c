@@ -7,7 +7,7 @@
 #include "files.h"
 #include "jugador.h"
 
-void elegirJugadores(struct un_jugador***, struct un_jugador*, const int, int, int*);
+void elegirJugadores(struct un_jugador***, struct un_jugador*, const int, int, int, int*);
 void elegirEquiposManualmente(struct un_equipo*, struct un_equipo*, int,  struct un_jugador**);
 
 int main(void)
@@ -18,16 +18,21 @@ int main(void)
     struct un_jugador **jugadores_disponibles;
     struct un_equipo equipo1, equipo2;
 
-    int input = 0;
+    int input = -1;
     int tam_equipo = 0;
     int pos_y;
-    int padding_x = 4;
+    int padding_x = 10;
+    int padding_y = 2;
+    // old padding = 3;
 
     setupTerminal();
     inicioDeSistema(&input);
-    while(input != 99)
+    _sleep(500);
+    clearScreen();
+    showCursor();
+    while(input != 0)
     {
-        pos_y = 0;
+        pos_y = padding_y;
         cantidad_jugadores = calcularCantidadDeJugadores(dir_archivo);
         jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
         if(cantidad_jugadores > 0)
@@ -35,17 +40,15 @@ int main(void)
             cargarListaDeJugadores(dir_archivo, jugadores);
             ordenarArchivoJugadores(dir_archivo, &jugadores, cantidad_jugadores);
         }
-        _sleep(500);
-        clearScreen();
 
         if(input == 1 || input == 2)
         {
             // moveTo(padding_x + 2, 3);
             // printf("Cant: %d", cantidad_jugadores);
             
-            mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, &pos_y);
+            mostrarListadoJugadores(jugadores, cantidad_jugadores, tam_equipo, padding_x, &pos_y);
 
-            moveTo(padding_x, pos_y);
+            moveTo(padding_x + 1, pos_y);
             printf("Ingrese el tamaño de los equipos: ");
             scanf("%d", &tam_equipo);
             moveTo(padding_x, pos_y);
@@ -53,7 +56,7 @@ int main(void)
 
             jugadores_disponibles = malloc(tam_equipo * 2 * sizeof(struct un_jugador *));
 
-            elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2, padding_x, &pos_y);
+            elegirJugadores(&jugadores_disponibles, jugadores, tam_equipo * 2, padding_x, padding_y, &pos_y);
 
             equipo1.num = 0;
             equipo1.probabilidadGanar = 0;
@@ -81,7 +84,7 @@ int main(void)
             struct un_equipo equipos[2] = {equipo1, equipo2};
 
             //float probabilidadDeGanar = 
-            mostrarEquipos(equipos, tam_equipo);
+            mostrarEquipos(equipos, tam_equipo, padding_x, padding_y);
             free(jugadores);
             free(jugadores_disponibles);
             free(equipo1.jugadores);
@@ -89,7 +92,7 @@ int main(void)
         }
         else if(input == 3)
         {
-            ingresarNuevosJugadores(dir_archivo, &cantidad_jugadores, &pos_y);
+            ingresarNuevosJugadores(dir_archivo, &cantidad_jugadores, padding_x, &pos_y);
 
             free(jugadores);
             jugadores = malloc(cantidad_jugadores * sizeof(struct un_jugador));
@@ -106,16 +109,18 @@ int main(void)
         }
 
         moveTo(padding_x + 1, pos_y);
-        _sleep(500 * 2);
+        _sleep(500);
         printf("Volver al menú...");
-        _getch();
+        _sleep(500);
+        getch();
 
         inicioDeSistema(&input);
     }
     clearScreen();
     return 0;
 }
-void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores, int padding_x, int* pos_y)
+
+void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugador *jugadores, const int cant_jugadores, int padding_x, int padding_y, int* pos_y)
 {
     int indice_jugador = 0;
     int contador = 0;
@@ -130,7 +135,7 @@ void elegirJugadores(struct un_jugador ***jugadores_disponibles, struct un_jugad
     while (contador < cant_jugadores && indice_jugador > -1)
     {
         (*jugadores_disponibles)[contador] = &jugadores[indice_jugador];
-        jugadorFueElegido(indice_jugador);
+        jugadorFueElegido(indice_jugador, padding_x + 4, padding_y + 8);
         moveTo(padding_x, *pos_y);
         printf("                        ");
         contador++;

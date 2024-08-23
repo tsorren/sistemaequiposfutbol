@@ -22,6 +22,7 @@
 
 void setupTerminal();
 void clearScreen();
+void showCursor();
 
 void setColor(int , int);
 void setColorRGB(int, int, int);

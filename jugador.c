@@ -126,10 +126,13 @@ void calcularProbabilidadDeGanar(struct un_equipo *eq1, struct un_equipo *eq2, i
     const float modificador = 3;
     //float esperanza = (eq1->promedio + sqrt(eq1->varianza) - (eq2->promedio + sqrt(eq2->varianza))) * modificador;
     float esperanza = eq1->promedio - eq2->promedio;
-    esperanza *= modificador;
+    // esperanza *= modificador;
 
     eq1->varianza = calcularVarianza(eq1->jugadores, tam_equipo, eq1->promedio);
     eq2->varianza  = calcularVarianza(eq2->jugadores, tam_equipo, eq2->promedio);
+
+    // esperanza -= eq1->varianza - eq2->varianza;
+
     float desvio = ((tam_equipo - 1) * eq1->varianza + (tam_equipo - 1) * eq2->varianza) / (2 * tam_equipo - 2);
     desvio *= sqrt(2.0 / tam_equipo);
     //varianza *= modificador;
